@@ -1,0 +1,37 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>© {year} 叶枫影 · moments</span>
+    <span class="dot">·</span>
+    <span>Powered by <a href="https://astro.build">Astro</a></span>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--color-border);
+    padding: var(--space-lg) 0;
+    margin-top: var(--space-xl);
+    color: var(--color-text-muted);
+    font-size: 13px;
+  }
+
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+  }
+
+  .footer-inner a {
+    color: var(--color-primary);
+  }
+
+  .dot {
+    opacity: 0.5;
+  }
+</style>

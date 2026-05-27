@@ -1,0 +1,142 @@
+---
+interface Props {
+  tags?: { name: string; count: number }[];
+  postCount?: number;
+}
+
+const { tags = [], postCount = 0 } = Astro.props;
+---
+
+<aside class="sidebar">
+  <section class="panel profile">
+    <div class="avatar">
+      <span>叶</span>
+    </div>
+    <h3 class="profile-name">叶枫影</h3>
+    <p class="profile-bio">在代码缝隙里记录生活的片段。</p>
+    <div class="profile-stats">
+      <div class="stat">
+        <span class="stat-num">{postCount}</span>
+        <span class="stat-label">随笔</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">∞</span>
+        <span class="stat-label">瞬间</span>
+      </div>
+    </div>
+  </section>
+
+  {
+    tags.length > 0 && (
+      <section class="panel">
+        <h4 class="panel-title">标签</h4>
+        <div class="tag-cloud">
+          {tags.map((t) => (
+            <span class="badge">
+              {t.name} <em>{t.count}</em>
+            </span>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="panel">
+    <h4 class="panel-title">关于</h4>
+    <p class="about-text">
+      这里是 <strong>moments</strong> —— 与 <a href="https://leafvmaple.com">leafvmaple.com</a> 互为补集的生活站，存放那些不适合放在技术博客里的瞬间。
+    </p>
+  </section>
+</aside>
+
+<style>
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .panel-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-heading);
+    margin: 0 0 var(--space-md);
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .profile {
+    text-align: center;
+  }
+
+  .avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent-green));
+    margin: 0 auto var(--space-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 28px;
+    font-weight: 300;
+  }
+
+  .profile-name {
+    font-size: 17px;
+    margin: 0 0 4px;
+  }
+
+  .profile-bio {
+    color: var(--color-text-muted);
+    font-size: 13px;
+    margin: 0 0 var(--space-md);
+  }
+
+  .profile-stats {
+    display: flex;
+    justify-content: space-around;
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-md);
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .stat-num {
+    font-size: 18px;
+    color: var(--color-heading);
+    font-weight: 600;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--color-text-muted);
+  }
+
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tag-cloud .badge em {
+    font-style: normal;
+    color: var(--color-primary);
+    margin-left: 2px;
+  }
+
+  .about-text {
+    font-size: 13px;
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  .about-text a {
+    color: var(--color-primary);
+  }
+</style>

@@ -1,0 +1,116 @@
+---
+interface Props {
+  title: string;
+  date: Date;
+  excerpt?: string;
+  tags?: string[];
+  href: string;
+  cover?: string;
+}
+
+const { title, date, excerpt, tags = [], href, cover } = Astro.props;
+
+const formattedDate = date.toLocaleDateString('zh-CN', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+---
+
+<article class="post-card panel">
+  {
+    cover && (
+      <a href={href} class="cover-link">
+        <img src={cover} alt={title} class="cover" loading="lazy" />
+      </a>
+    )
+  }
+  <div class="card-body">
+    <h2 class="card-title">
+      <a href={href}>{title}</a>
+    </h2>
+    <div class="card-meta">
+      <time datetime={date.toISOString()}>{formattedDate}</time>
+      {
+        tags.length > 0 && (
+          <span class="card-tags">
+            {tags.map((t) => (
+              <span class="badge">#{t}</span>
+            ))}
+          </span>
+        )
+      }
+    </div>
+    {excerpt && <p class="card-excerpt">{excerpt}</p>}
+    <a href={href} class="read-more">阅读全文 →</a>
+  </div>
+</article>
+
+<style>
+  .post-card {
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .post-card:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .cover-link {
+    display: block;
+    overflow: hidden;
+  }
+
+  .cover {
+    width: 100%;
+    aspect-ratio: 16 / 7;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .cover-link:hover .cover {
+    transform: scale(1.03);
+  }
+
+  .card-body {
+    padding: var(--space-lg);
+  }
+
+  .card-title {
+    font-size: 20px;
+    margin: 0 0 var(--space-sm);
+  }
+
+  .card-title a {
+    color: var(--color-heading);
+  }
+
+  .card-title a:hover {
+    color: var(--color-primary);
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    color: var(--color-text-muted);
+    font-size: 13px;
+    margin-bottom: var(--space-md);
+  }
+
+  .card-tags {
+    display: inline-flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .card-excerpt {
+    color: var(--color-text);
+    margin: 0 0 var(--space-md);
+  }
+
+  .read-more {
+    color: var(--color-primary);
+    font-size: 14px;
+  }
+</style>

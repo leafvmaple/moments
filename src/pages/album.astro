@@ -1,0 +1,108 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import album from '../data/album.json';
+
+interface AlbumItem {
+  src: string;
+  title: string;
+  caption?: string;
+}
+
+const items = album as AlbumItem[];
+---
+
+<BaseLayout title="相册" description="生活中那些值得留下的画面。">
+  <section class="album-intro panel">
+    <h1>相册 · Album</h1>
+    <p>致敬旧站 <code>album/data.json</code> 的极简思路：所有照片由 <code>src/data/album.json</code> 驱动，加图即更新。</p>
+  </section>
+
+  <section class="masonry">
+    {
+      items.map((item) => (
+        <figure class="masonry-item panel">
+          <a href={item.src} target="_blank" rel="noopener noreferrer">
+            <img src={item.src} alt={item.title} loading="lazy" />
+          </a>
+          <figcaption>
+            <h3>{item.title}</h3>
+            {item.caption && <p>{item.caption}</p>}
+          </figcaption>
+        </figure>
+      ))
+    }
+  </section>
+</BaseLayout>
+
+<style>
+  .album-intro {
+    margin: var(--space-lg) 0;
+  }
+
+  .album-intro h1 {
+    margin: 0 0 var(--space-sm);
+  }
+
+  .album-intro p {
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
+  .masonry {
+    column-count: 3;
+    column-gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+  }
+
+  @media (max-width: 900px) {
+    .masonry {
+      column-count: 2;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .masonry {
+      column-count: 1;
+    }
+  }
+
+  .masonry-item {
+    break-inside: avoid;
+    padding: 0;
+    overflow: hidden;
+    margin-bottom: var(--space-md);
+    display: inline-block;
+    width: 100%;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .masonry-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .masonry-item img {
+    width: 100%;
+    display: block;
+    transition: opacity 0.2s ease;
+  }
+
+  .masonry-item img:hover {
+    opacity: 0.92;
+  }
+
+  figcaption {
+    padding: var(--space-md);
+  }
+
+  figcaption h3 {
+    font-size: 15px;
+    margin: 0 0 4px;
+  }
+
+  figcaption p {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 13px;
+  }
+</style>

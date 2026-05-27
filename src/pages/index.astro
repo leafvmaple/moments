@@ -1,0 +1,64 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Sidebar from '../components/Sidebar.astro';
+import PostCard from '../components/PostCard.astro';
+
+const posts = (await getCollection('posts')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+const tagCounts = new Map<string, number>();
+for (const p of posts) {
+  for (const t of p.data.tags) {
+    tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
+  }
+}
+const tags = Array.from(tagCounts.entries())
+  .map(([name, count]) => ({ name, count }))
+  .sort((a, b) => b.count - a.count);
+---
+
+<BaseLayout>
+  <div class="layout">
+    <section class="post-list">
+      {
+        posts.length === 0 ? (
+          <div class="panel empty">
+            <h2>还没有文章</h2>
+            <p>在 <code>src/content/posts/</code> 添加 Markdown 文件即可。</p>
+          </div>
+        ) : (
+          posts.map((p) => (
+            <PostCard
+              title={p.data.title}
+              date={p.data.date}
+              excerpt={p.data.excerpt}
+              tags={p.data.tags}
+              cover={p.data.cover}
+              href={`/posts/${p.id}`}
+            />
+          ))
+        )
+      }
+    </section>
+    <Sidebar tags={tags} postCount={posts.length} />
+  </div>
+</BaseLayout>
+
+<style>
+  .post-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .empty {
+    text-align: center;
+    color: var(--color-text-muted);
+  }
+
+  .empty h2 {
+    margin-bottom: var(--space-sm);
+  }
+</style>
