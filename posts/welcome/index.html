@@ -1,0 +1,43 @@
+<!DOCTYPE html><html lang="zh-CN"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="Astro v6.3.8"><meta name="description" content="这是 moments 站点的第一篇随笔。技术博客留给代码，这里留给生活的碎片。"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="icon" href="/favicon.ico"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet"><title>你好，moments — Moments · 叶枫影</title><script>
+      (() => {
+        const stored = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = stored ?? (prefersDark ? 'dark' : 'light');
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.aMjgjof6.css">
+<style>.sidebar[data-astro-cid-ssfzsv2f]{display:flex;flex-direction:column;gap:var(--space-md)}.panel-title[data-astro-cid-ssfzsv2f]{font-size:14px;font-weight:600;color:var(--color-heading);margin:0 0 var(--space-md);padding-bottom:var(--space-sm);border-bottom:1px solid var(--color-border)}.profile[data-astro-cid-ssfzsv2f]{text-align:center}.avatar[data-astro-cid-ssfzsv2f]{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-accent-green));margin:0 auto var(--space-sm);display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px;font-weight:300}.profile-name[data-astro-cid-ssfzsv2f]{font-size:17px;margin:0 0 4px}.profile-bio[data-astro-cid-ssfzsv2f]{color:var(--color-text-muted);font-size:13px;margin:0 0 var(--space-md)}.profile-stats[data-astro-cid-ssfzsv2f]{display:flex;justify-content:space-around;border-top:1px solid var(--color-border);padding-top:var(--space-md)}.stat[data-astro-cid-ssfzsv2f]{display:flex;flex-direction:column;align-items:center}.stat-num[data-astro-cid-ssfzsv2f]{font-size:18px;color:var(--color-heading);font-weight:600}.stat-label[data-astro-cid-ssfzsv2f]{font-size:12px;color:var(--color-text-muted)}.tag-cloud[data-astro-cid-ssfzsv2f]{display:flex;flex-wrap:wrap;gap:6px}.tag-cloud[data-astro-cid-ssfzsv2f] .badge[data-astro-cid-ssfzsv2f] em[data-astro-cid-ssfzsv2f]{font-style:normal;color:var(--color-primary);margin-left:2px}.about-text[data-astro-cid-ssfzsv2f]{font-size:13px;line-height:1.7;margin:0}.about-text[data-astro-cid-ssfzsv2f] a[data-astro-cid-ssfzsv2f]{color:var(--color-primary)}
+.post[data-astro-cid-egg7nqdx]{padding:0;overflow:hidden}.post-cover[data-astro-cid-egg7nqdx]{width:100%;aspect-ratio:16 / 6;object-fit:cover}.post-header[data-astro-cid-egg7nqdx]{padding:var(--space-xl) var(--space-xl) var(--space-md)}.post-title[data-astro-cid-egg7nqdx]{font-size:28px;margin-bottom:var(--space-md)}.post-meta[data-astro-cid-egg7nqdx]{color:var(--color-text-muted);font-size:13px;display:flex;align-items:center;gap:var(--space-md)}.post-tags[data-astro-cid-egg7nqdx]{display:inline-flex;gap:4px;flex-wrap:wrap}.markdown-body[data-astro-cid-egg7nqdx]{padding:0 var(--space-xl) var(--space-xl)}
+</style></head> <body> <header class="site-header" data-astro-cid-3ef6ksr2> <div class="container header-inner" data-astro-cid-3ef6ksr2> <a href="/" class="brand" data-astro-cid-3ef6ksr2> <span class="brand-mark" data-astro-cid-3ef6ksr2>M</span> <span class="brand-text" data-astro-cid-3ef6ksr2>moments</span> </a> <nav class="site-nav" data-astro-cid-3ef6ksr2> <a href="/" class data-astro-cid-3ef6ksr2> 首页 </a><a href="/album" class data-astro-cid-3ef6ksr2> 相册 </a><a href="https://leafvmaple.com" class target="_blank" rel="noopener noreferrer" data-astro-cid-3ef6ksr2> 技术博客 </a> <button class="theme-toggle" type="button" aria-label="切换主题" data-astro-cid-3ef6ksr2> <span class="theme-icon-light" data-astro-cid-3ef6ksr2>☀</span> <span class="theme-icon-dark" data-astro-cid-3ef6ksr2>☾</span> </button> </nav> </div> </header> <script>
+  const toggle = document.querySelector('.theme-toggle');
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = next;
+      localStorage.setItem('theme', next);
+    });
+  }
+</script> <main class="container">  <div class="layout" data-astro-cid-egg7nqdx> <article class="post panel" data-astro-cid-egg7nqdx>  <header class="post-header" data-astro-cid-egg7nqdx> <h1 class="post-title" data-astro-cid-egg7nqdx>你好，moments</h1> <div class="post-meta" data-astro-cid-egg7nqdx> <time datetime="2026-05-27T00:00:00.000Z" data-astro-cid-egg7nqdx>2026年5月27日</time> <span class="post-tags" data-astro-cid-egg7nqdx> <span class="badge" data-astro-cid-egg7nqdx>#起笔</span><span class="badge" data-astro-cid-egg7nqdx>#站务</span> </span> </div> </header> <div class="markdown-body" data-astro-cid-egg7nqdx> <h2 id="关于这里">关于这里</h2>
+<p><a href="https://leafvmaple.com">leafvmaple.com</a> 是写代码的地方，<strong>moments</strong> 是写其他的地方。</p>
+<p>照片、音乐、读后感、出门看到的某棵树 —— 那些不太适合放在技术博客里、又值得被记下来的东西，都会落在这里。</p>
+<h2 id="这个站点是怎么搭起来的">这个站点是怎么搭起来的</h2>
+<ul>
+<li>框架：<a href="https://astro.build">Astro</a> —— 编译为纯静态 HTML，部署到 GitHub Pages</li>
+<li>设计：复刻了我多年前用过的 Typecho <strong>handsome</strong> 主题的调色与排版（主色 <code>#23b7e5</code>、左导航 + 卡片列表的味道）</li>
+<li>CMS：直接写 Markdown 放进仓库，没有后台</li>
+</ul>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="plaintext"><code><span class="line"><span>src/</span></span>
+<span class="line"><span>├─ content/posts/   ← 在这里加 .md 文件</span></span>
+<span class="line"><span>├─ data/album.json  ← 在这里加相册条目</span></span>
+<span class="line"><span>└─ pages/           ← 路由</span></span></code></pre>
+<h2 id="接下来">接下来</h2>
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" disabled> 友链页面 <code>/links</code></li>
+<li class="task-list-item"><input type="checkbox" disabled> 音乐播放器（致敬旧站的 <code>/music</code>）</li>
+<li class="task-list-item"><input type="checkbox" disabled> 把旧 Typecho 上的生活向随笔慢慢迁过来</li>
+</ul>
+<blockquote>
+<p>旧的好东西不应该被时代抛下，但也不必把它们原封不动地保留下来。</p>
+</blockquote> </div> </article> <aside class="sidebar" data-astro-cid-ssfzsv2f> <section class="panel profile" data-astro-cid-ssfzsv2f> <div class="avatar" data-astro-cid-ssfzsv2f> <span data-astro-cid-ssfzsv2f>叶</span> </div> <h3 class="profile-name" data-astro-cid-ssfzsv2f>叶枫影</h3> <p class="profile-bio" data-astro-cid-ssfzsv2f>在代码缝隙里记录生活的片段。</p> <div class="profile-stats" data-astro-cid-ssfzsv2f> <div class="stat" data-astro-cid-ssfzsv2f> <span class="stat-num" data-astro-cid-ssfzsv2f>0</span> <span class="stat-label" data-astro-cid-ssfzsv2f>随笔</span> </div> <div class="stat" data-astro-cid-ssfzsv2f> <span class="stat-num" data-astro-cid-ssfzsv2f>∞</span> <span class="stat-label" data-astro-cid-ssfzsv2f>瞬间</span> </div> </div> </section>  <section class="panel" data-astro-cid-ssfzsv2f> <h4 class="panel-title" data-astro-cid-ssfzsv2f>关于</h4> <p class="about-text" data-astro-cid-ssfzsv2f>
+这里是 <strong data-astro-cid-ssfzsv2f>moments</strong> —— 与 <a href="https://leafvmaple.com" data-astro-cid-ssfzsv2f>leafvmaple.com</a> 互为补集的生活站，存放那些不适合放在技术博客里的瞬间。
+</p> </section> </aside> </div>  </main> <footer class="site-footer" data-astro-cid-sz7xmlte> <div class="container footer-inner" data-astro-cid-sz7xmlte> <span data-astro-cid-sz7xmlte>© 2026 叶枫影 · moments</span> <span class="dot" data-astro-cid-sz7xmlte>·</span> <span data-astro-cid-sz7xmlte>Powered by <a href="https://astro.build" data-astro-cid-sz7xmlte>Astro</a></span> </div> </footer> </body></html>
