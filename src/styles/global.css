@@ -29,7 +29,8 @@
   --space-lg: 24px;
   --space-xl: 40px;
 
-  --aside-w: 240px;
+  --aside-w: 260px;
+  --aside-pad-x: 28px;
   --right-w: 300px;
   --topbar-h: 56px;
 

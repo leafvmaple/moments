@@ -58,14 +58,14 @@ const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
 
 <style>
   .app-aside {
-    padding: var(--space-md) 0 var(--space-sm);
+    padding: var(--space-lg) 0 var(--space-sm);
   }
 
   .brand {
     display: inline-flex;
     align-items: center;
     gap: var(--space-sm);
-    padding: 0 var(--space-lg) var(--space-md);
+    padding: 0 var(--aside-pad-x) var(--space-lg);
     color: var(--color-heading);
     font-size: 16px;
   }
@@ -90,21 +90,21 @@ const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
 
   .profile {
     text-align: center;
-    padding: var(--space-md) var(--space-lg) var(--space-lg);
+    padding: var(--space-sm) var(--aside-pad-x) var(--space-xl);
     border-bottom: 1px solid var(--color-border);
   }
 
   .avatar {
-    width: 80px;
-    height: 80px;
+    width: 96px;
+    height: 96px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--color-primary), var(--color-accent-green));
-    margin: 0 auto var(--space-sm);
+    margin: 0 auto var(--space-md);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
-    font-size: 32px;
+    font-size: 38px;
     font-weight: 300;
   }
 
@@ -126,7 +126,7 @@ const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
   .nav {
     display: flex;
     flex-direction: column;
-    padding: var(--space-sm) 0;
+    padding: var(--space-md) 0;
     flex: 1;
   }
 
@@ -134,7 +134,7 @@ const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
     display: flex;
     align-items: center;
     gap: var(--space-md);
-    padding: 10px var(--space-lg);
+    padding: 12px var(--aside-pad-x);
     color: var(--color-text);
     font-size: 13px;
     transition: background-color 0.15s ease, color 0.15s ease;
@@ -148,8 +148,6 @@ const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
   .nav-item.active {
     background: var(--color-bg-card);
     color: var(--color-heading);
-    border-left: 2px solid var(--color-primary);
-    padding-left: calc(var(--space-lg) - 2px);
   }
 
   .nav-item span {
@@ -165,7 +163,7 @@ const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
     align-items: center;
     justify-content: center;
     gap: var(--space-lg);
-    padding: var(--space-md) var(--space-lg);
+    padding: var(--space-md) var(--aside-pad-x);
     border-top: 1px solid var(--color-border);
     color: var(--color-text-muted);
   }
