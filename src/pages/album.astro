@@ -11,7 +11,7 @@ interface AlbumItem {
 const items = album as AlbumItem[];
 ---
 
-<BaseLayout title="相册" description="生活中那些值得留下的画面。">
+<BaseLayout title="相册" description="生活中那些值得留下的画面。" pageTitle="相册">
   <section class="album-intro panel">
     <h1>相册 · Album</h1>
     <p>致敬旧站 <code>album/data.json</code> 的极简思路：所有照片由 <code>src/data/album.json</code> 驱动，加图即更新。</p>
@@ -36,11 +36,13 @@ const items = album as AlbumItem[];
 
 <style>
   .album-intro {
-    margin: var(--space-lg) 0;
+    margin-bottom: var(--space-lg);
   }
 
   .album-intro h1 {
     margin: 0 0 var(--space-sm);
+    font-weight: 300;
+    font-size: 24px;
   }
 
   .album-intro p {
@@ -51,10 +53,9 @@ const items = album as AlbumItem[];
   .masonry {
     column-count: 3;
     column-gap: var(--space-md);
-    margin-bottom: var(--space-lg);
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 1100px) {
     .masonry {
       column-count: 2;
     }
@@ -96,13 +97,14 @@ const items = album as AlbumItem[];
   }
 
   figcaption h3 {
-    font-size: 15px;
+    font-size: 14px;
     margin: 0 0 4px;
+    font-weight: 600;
   }
 
   figcaption p {
     margin: 0;
     color: var(--color-text-muted);
-    font-size: 13px;
+    font-size: 12px;
   }
 </style>

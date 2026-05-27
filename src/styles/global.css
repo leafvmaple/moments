@@ -10,6 +10,7 @@
   --color-bg-card: #ffffff;
   --color-bg-subtle: #efefef;
   --color-bg-code: rgba(66, 133, 244, 0.08);
+  --color-bg-aside: #f4f4f4;
 
   --color-text: #58666e;
   --color-text-muted: #98a3a8;
@@ -28,9 +29,9 @@
   --space-lg: 24px;
   --space-xl: 40px;
 
-  --container-max: 1200px;
-  --sidebar-w: 300px;
-  --header-h: 60px;
+  --aside-w: 240px;
+  --right-w: 300px;
+  --topbar-h: 56px;
 
   --font-body: 'Source Sans 3', 'Source Sans Pro', 'Hiragino Sans GB',
     'Microsoft YaHei', '微软雅黑', SimSun, Helvetica, Arial, sans-serif;
@@ -38,13 +39,14 @@
 }
 
 html[data-theme='dark'] {
-  --color-bg: #191919;
-  --color-bg-card: #212121;
-  --color-bg-subtle: #252525;
+  --color-bg: #1a1a1a;
+  --color-bg-card: #242424;
+  --color-bg-subtle: #2c2c2c;
   --color-bg-code: rgba(66, 133, 244, 0.18);
+  --color-bg-aside: #1f1f1f;
 
-  --color-text: #aaaaaa;
-  --color-text-muted: #777777;
+  --color-text: #b0b0b0;
+  --color-text-muted: #7a7a7a;
   --color-heading: #e0e0e0;
   --color-border: #2a2a2a;
 
@@ -65,6 +67,7 @@ html,
 body {
   margin: 0;
   padding: 0;
+  height: 100%;
 }
 
 html {
@@ -72,15 +75,11 @@ html {
   color: var(--color-text);
   font-family: var(--font-body);
   font-weight: 400;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-body {
-  min-height: 100vh;
 }
 
 h1,
@@ -95,22 +94,12 @@ h6 {
   margin: 0 0 var(--space-md);
 }
 
-h1 {
-  font-size: 30px;
-}
-h2 {
-  font-size: 24px;
-}
-h3 {
-  font-size: 20px;
-}
-h4 {
-  font-size: 17px;
-}
+h1 { font-size: 28px; }
+h2 { font-size: 22px; }
+h3 { font-size: 18px; }
+h4 { font-size: 15px; font-weight: 600; }
 
-p {
-  margin: 0 0 var(--space-md);
-}
+p { margin: 0 0 var(--space-md); }
 
 a {
   color: var(--color-text);
@@ -118,9 +107,7 @@ a {
   transition: color 0.15s ease;
 }
 
-a:hover {
-  color: var(--color-primary);
-}
+a:hover { color: var(--color-primary); }
 
 img {
   max-width: 100%;
@@ -173,33 +160,96 @@ hr {
 }
 
 /* ============================================================
-   Layout primitives
+   App shell — fixed left aside + main column
    ============================================================ */
-.container {
-  max-width: var(--container-max);
-  margin: 0 auto;
-  padding: 0 var(--space-lg);
-}
-
-.layout {
+.app-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--sidebar-w);
-  gap: var(--space-lg);
-  padding: var(--space-lg) 0;
+  grid-template-columns: var(--aside-w) 1fr;
+  height: 100vh;
+  overflow: hidden;
 }
 
-@media (max-width: 900px) {
-  .layout {
+.app-aside {
+  background: var(--color-bg-aside);
+  border-right: 1px solid var(--color-border);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.app-content {
+  flex: 1;
+  padding: var(--space-lg);
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--right-w);
+  gap: var(--space-lg);
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.content-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+.content-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+@media (max-width: 1100px) {
+  .content-grid {
     grid-template-columns: 1fr;
   }
 }
 
+@media (max-width: 900px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
+  }
+  .app-aside {
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .app-main {
+    overflow: visible;
+  }
+}
+
+/* ============================================================
+   Common surfaces
+   ============================================================ */
 .panel {
   background: var(--color-bg-card);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
   padding: var(--space-lg);
   transition: box-shadow 0.2s ease;
+}
+
+.panel-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-heading);
+  margin: 0 0 var(--space-md);
+  letter-spacing: 0.5px;
 }
 
 .badge {

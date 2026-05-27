@@ -1,27 +1,98 @@
 ---
-interface Props {
-  tags?: { name: string; count: number }[];
-  postCount?: number;
-}
+import { getCollection } from 'astro:content';
+import Icon from './Icon.astro';
 
-const { tags = [], postCount = 0 } = Astro.props;
+const allPosts = await getCollection('posts');
+const sorted = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const postCount = allPosts.length;
+const commentCount = 0;
+
+const blogStart = new Date('2026-05-27');
+const today = new Date();
+const days = Math.max(1, Math.floor((today.getTime() - blogStart.getTime()) / 86400000) + 1);
+const years = Math.floor(days / 365);
+const remainingDays = days % 365;
+const runningStr = years > 0 ? `${years}年${remainingDays}天` : `${days}天`;
+
+const lastDate = sorted[0]?.data.date ?? blogStart;
+const minutesSince = Math.max(1, Math.floor((today.getTime() - lastDate.getTime()) / 60000));
+const lastActivityStr =
+  minutesSince < 60
+    ? `${minutesSince}分钟前`
+    : minutesSince < 1440
+      ? `${Math.floor(minutesSince / 60)}小时前`
+      : `${Math.floor(minutesSince / 1440)}天前`;
+
+const tagCounts = new Map<string, number>();
+for (const p of allPosts) for (const t of p.data.tags) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
+const tags = Array.from(tagCounts.entries())
+  .map(([name, count]) => ({ name, count }))
+  .sort((a, b) => b.count - a.count);
+
+const recentPosts = sorted.slice(0, 3);
 ---
 
-<aside class="sidebar">
-  <section class="panel profile">
-    <div class="avatar">
-      <span>叶</span>
-    </div>
-    <h3 class="profile-name">叶枫影</h3>
-    <p class="profile-bio">在代码缝隙里记录生活的片段。</p>
-    <div class="profile-stats">
-      <div class="stat">
-        <span class="stat-num">{postCount}</span>
-        <span class="stat-label">随笔</span>
+<aside class="content-sidebar">
+  <section class="panel quick-tabs">
+    <button class="quick-tab" type="button" aria-label="点赞">
+      <Icon name="heart" size={16} />
+    </button>
+    <button class="quick-tab active" type="button" aria-label="评论">
+      <Icon name="messageCircle" size={16} />
+    </button>
+    <button class="quick-tab" type="button" aria-label="赞赏">
+      <Icon name="gift" size={16} />
+    </button>
+  </section>
+
+  {
+    recentPosts.length > 0 && (
+      <section class="panel recent-list">
+        {recentPosts.map((p) => (
+          <a class="recent-row" href={`/posts/${p.id}`}>
+            {p.data.cover ? (
+              <img class="recent-thumb" src={p.data.cover} alt={p.data.title} loading="lazy" />
+            ) : (
+              <div class="recent-thumb recent-thumb-placeholder">
+                <Icon name="fileText" size={16} />
+              </div>
+            )}
+            <div class="recent-text">
+              <span class="recent-title">{p.data.title}</span>
+              <span class="recent-meta">
+                <Icon name="messageCircle" size={11} />
+                <span>0</span>
+              </span>
+            </div>
+          </a>
+        ))}
+      </section>
+    )
+  }
+
+  <section class="panel">
+    <h4 class="panel-title">博客信息</h4>
+    <div class="stat-rows">
+      <div class="stat-row">
+        <Icon name="fileText" size={13} />
+        <span class="stat-label">文章数目</span>
+        <span class="badge">{postCount}</span>
       </div>
-      <div class="stat">
-        <span class="stat-num">∞</span>
-        <span class="stat-label">瞬间</span>
+      <div class="stat-row">
+        <Icon name="messageCircle" size={13} />
+        <span class="stat-label">评论数目</span>
+        <span class="badge">{commentCount}</span>
+      </div>
+      <div class="stat-row">
+        <Icon name="calendar" size={13} />
+        <span class="stat-label">运行天数</span>
+        <span class="badge">{runningStr}</span>
+      </div>
+      <div class="stat-row">
+        <Icon name="activity" size={13} />
+        <span class="stat-label">最后活动</span>
+        <span class="badge">{lastActivityStr}</span>
       </div>
     </div>
   </section>
@@ -29,7 +100,7 @@ const { tags = [], postCount = 0 } = Astro.props;
   {
     tags.length > 0 && (
       <section class="panel">
-        <h4 class="panel-title">标签</h4>
+        <h4 class="panel-title">标签云</h4>
         <div class="tag-cloud">
           {tags.map((t) => (
             <span class="badge">
@@ -40,82 +111,127 @@ const { tags = [], postCount = 0 } = Astro.props;
       </section>
     )
   }
-
-  <section class="panel">
-    <h4 class="panel-title">关于</h4>
-    <p class="about-text">
-      这里是 <strong>moments</strong> —— 与 <a href="https://leafvmaple.com">leafvmaple.com</a> 互为补集的生活站，存放那些不适合放在技术博客里的瞬间。
-    </p>
-  </section>
 </aside>
 
 <style>
-  .sidebar {
+  .quick-tabs {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    padding: var(--space-sm);
+  }
+
+  .quick-tab {
+    background: transparent;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .quick-tab:hover {
+    background: var(--color-bg-subtle);
+    color: var(--color-primary);
+  }
+
+  .quick-tab.active {
+    color: var(--color-primary);
+    background: var(--color-bg-subtle);
+  }
+
+  .recent-list {
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .recent-row {
+    display: flex;
+    align-items: center;
     gap: var(--space-md);
+    padding: var(--space-md);
+    color: var(--color-text);
   }
 
-  .panel-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--color-heading);
-    margin: 0 0 var(--space-md);
-    padding-bottom: var(--space-sm);
-    border-bottom: 1px solid var(--color-border);
+  .recent-row + .recent-row {
+    border-top: 1px solid var(--color-border);
   }
 
-  .profile {
-    text-align: center;
+  .recent-row:hover {
+    background: var(--color-bg-subtle);
   }
 
-  .avatar {
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-accent-green));
-    margin: 0 auto var(--space-sm);
+  .recent-thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .recent-thumb-placeholder {
+    background: var(--color-bg-subtle);
+    color: var(--color-text-muted);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    font-size: 28px;
-    font-weight: 300;
   }
 
-  .profile-name {
-    font-size: 17px;
-    margin: 0 0 4px;
-  }
-
-  .profile-bio {
-    color: var(--color-text-muted);
-    font-size: 13px;
-    margin: 0 0 var(--space-md);
-  }
-
-  .profile-stats {
-    display: flex;
-    justify-content: space-around;
-    border-top: 1px solid var(--color-border);
-    padding-top: var(--space-md);
-  }
-
-  .stat {
+  .recent-text {
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    gap: 4px;
   }
 
-  .stat-num {
-    font-size: 18px;
+  .recent-title {
+    font-size: 13px;
     color: var(--color-heading);
-    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .recent-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--color-text-muted);
+    font-size: 11px;
+  }
+
+  .stat-rows {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stat-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 10px 0;
+    font-size: 13px;
+    color: var(--color-text);
+  }
+
+  .stat-row + .stat-row {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .stat-row > :global(svg) {
+    color: var(--color-text-muted);
+    flex-shrink: 0;
   }
 
   .stat-label {
-    font-size: 12px;
-    color: var(--color-text-muted);
+    flex: 1;
+    color: var(--color-text);
   }
 
   .tag-cloud {
@@ -128,15 +244,5 @@ const { tags = [], postCount = 0 } = Astro.props;
     font-style: normal;
     color: var(--color-primary);
     margin-left: 2px;
-  }
-
-  .about-text {
-    font-size: 13px;
-    line-height: 1.7;
-    margin: 0;
-  }
-
-  .about-text a {
-    color: var(--color-primary);
   }
 </style>

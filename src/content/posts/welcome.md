@@ -5,6 +5,7 @@ tags:
   - 起笔
   - 站务
 excerpt: 这是 moments 站点的第一篇随笔。技术博客留给代码，这里留给生活的碎片。
+cover: https://picsum.photos/id/106/1600/700
 ---
 
 ## 关于这里

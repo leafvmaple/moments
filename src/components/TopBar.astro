@@ -1,0 +1,131 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  pageTitle?: string;
+}
+
+const { pageTitle } = Astro.props;
+---
+
+<header class="topbar">
+  <div class="topbar-left">
+    {pageTitle && <span class="page-title">{pageTitle}</span>}
+  </div>
+  <div class="topbar-right">
+    <button class="search-stub" type="button" aria-label="搜索（暂未启用）">
+      <Icon name="search" size={14} />
+      <span>搜索</span>
+      <kbd>Ctrl+K</kbd>
+    </button>
+    <button class="theme-toggle" type="button" aria-label="切换主题">
+      <span class="theme-icon-light"><Icon name="sun" size={14} /></span>
+      <span class="theme-icon-dark"><Icon name="moon" size={14} /></span>
+    </button>
+  </div>
+</header>
+
+<script is:inline>
+  const toggle = document.querySelector('.theme-toggle');
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = next;
+      localStorage.setItem('theme', next);
+    });
+  }
+</script>
+
+<style>
+  .topbar {
+    height: var(--topbar-h);
+    background: var(--color-bg-card);
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--space-lg);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: saturate(180%) blur(8px);
+  }
+
+  .topbar-left,
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .page-title {
+    color: var(--color-heading);
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .search-stub {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    background: var(--color-bg-subtle);
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    padding: 6px var(--space-md);
+    font-size: 12px;
+    cursor: not-allowed;
+    transition: border-color 0.15s ease;
+  }
+
+  .search-stub kbd {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+
+  .theme-toggle {
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    color: var(--color-text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .theme-toggle:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  .theme-icon-light,
+  .theme-icon-dark {
+    display: inline-flex;
+  }
+
+  .theme-icon-light {
+    display: none;
+  }
+
+  :global(html[data-theme='dark']) .theme-icon-light {
+    display: inline-flex;
+  }
+  :global(html[data-theme='dark']) .theme-icon-dark {
+    display: none;
+  }
+
+  @media (max-width: 600px) {
+    .search-stub span,
+    .search-stub kbd {
+      display: none;
+    }
+  }
+</style>

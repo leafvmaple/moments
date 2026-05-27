@@ -7,21 +7,15 @@ import PostCard from '../components/PostCard.astro';
 const posts = (await getCollection('posts')).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
-
-const tagCounts = new Map<string, number>();
-for (const p of posts) {
-  for (const t of p.data.tags) {
-    tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
-  }
-}
-const tags = Array.from(tagCounts.entries())
-  .map(([name, count]) => ({ name, count }))
-  .sort((a, b) => b.count - a.count);
 ---
 
-<BaseLayout>
-  <div class="layout">
-    <section class="post-list">
+<BaseLayout pageTitle="首页">
+  <div class="content-grid">
+    <section class="content-main">
+      <header class="page-header">
+        <h1>Hello World</h1>
+        <p>迷失的人迷失了，相逢的人会再相逢。</p>
+      </header>
       {
         posts.length === 0 ? (
           <div class="panel empty">
@@ -42,15 +36,21 @@ const tags = Array.from(tagCounts.entries())
         )
       }
     </section>
-    <Sidebar tags={tags} postCount={posts.length} />
+    <Sidebar />
   </div>
 </BaseLayout>
 
 <style>
-  .post-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
+  .page-header h1 {
+    font-size: 28px;
+    color: var(--color-heading);
+    margin: 0 0 var(--space-sm);
+    font-weight: 300;
+  }
+
+  .page-header p {
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-md);
   }
 
   .empty {

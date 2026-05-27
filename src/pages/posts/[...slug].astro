@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Sidebar from '../../components/Sidebar.astro';
+import Icon from '../../components/Icon.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts');
@@ -16,25 +17,24 @@ type Props = { post: Awaited<ReturnType<typeof getCollection<'posts'>>>[number] 
 const { post } = Astro.props as Props;
 const { Content } = await render(post);
 
-const formattedDate = post.data.date.toLocaleDateString('zh-CN', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-});
+const formattedDate = `${post.data.date.getFullYear()} 年 ${String(post.data.date.getMonth() + 1).padStart(2, '0')} 月 ${String(post.data.date.getDate()).padStart(2, '0')} 日`;
 ---
 
-<BaseLayout title={post.data.title} description={post.data.excerpt}>
-  <div class="layout">
-    <article class="post panel">
-      {
-        post.data.cover && (
-          <img src={post.data.cover} alt={post.data.title} class="post-cover" />
-        )
-      }
-      <header class="post-header">
+<BaseLayout title={post.data.title} description={post.data.excerpt} pageTitle={post.data.title}>
+  <div class="content-grid">
+    <article class="content-main post">
+      {post.data.cover && <img src={post.data.cover} alt={post.data.title} class="post-cover" />}
+      <div class="post-body">
         <h1 class="post-title">{post.data.title}</h1>
         <div class="post-meta">
-          <time datetime={post.data.date.toISOString()}>{formattedDate}</time>
+          <span class="meta-item">
+            <Icon name="user" size={13} />
+            <span>leafvmaple</span>
+          </span>
+          <span class="meta-item">
+            <Icon name="clock" size={13} />
+            <span>{formattedDate}</span>
+          </span>
           {
             post.data.tags.length > 0 && (
               <span class="post-tags">
@@ -45,18 +45,20 @@ const formattedDate = post.data.date.toLocaleDateString('zh-CN', {
             )
           }
         </div>
-      </header>
-      <div class="markdown-body">
-        <Content />
+        <div class="markdown-body">
+          <Content />
+        </div>
       </div>
     </article>
-    <Sidebar postCount={0} />
+    <Sidebar />
   </div>
 </BaseLayout>
 
 <style>
   .post {
-    padding: 0;
+    background: var(--color-bg-card);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
     overflow: hidden;
   }
 
@@ -66,13 +68,14 @@ const formattedDate = post.data.date.toLocaleDateString('zh-CN', {
     object-fit: cover;
   }
 
-  .post-header {
-    padding: var(--space-xl) var(--space-xl) var(--space-md);
+  .post-body {
+    padding: var(--space-xl);
   }
 
   .post-title {
-    font-size: 28px;
+    font-size: 26px;
     margin-bottom: var(--space-md);
+    font-weight: 300;
   }
 
   .post-meta {
@@ -81,15 +84,22 @@ const formattedDate = post.data.date.toLocaleDateString('zh-CN', {
     display: flex;
     align-items: center;
     gap: var(--space-md);
+    flex-wrap: wrap;
+    padding-bottom: var(--space-md);
+    margin-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
   }
 
   .post-tags {
     display: inline-flex;
     gap: 4px;
     flex-wrap: wrap;
-  }
-
-  .markdown-body {
-    padding: 0 var(--space-xl) var(--space-xl);
+    margin-left: auto;
   }
 </style>
