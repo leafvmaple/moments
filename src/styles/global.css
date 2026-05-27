@@ -33,6 +33,7 @@
   --aside-pad-x: 28px;
   --right-w: 300px;
   --topbar-h: 56px;
+  --shell-max: 1600px;
 
   --font-body: 'Source Sans 3', 'Source Sans Pro', 'Hiragino Sans GB',
     'Microsoft YaHei', '微软雅黑', SimSun, Helvetica, Arial, sans-serif;
@@ -168,6 +169,8 @@ hr {
   grid-template-columns: var(--aside-w) 1fr;
   height: 100vh;
   overflow: hidden;
+  max-width: var(--shell-max);
+  margin: 0 auto;
 }
 
 .app-aside {
