@@ -18,7 +18,8 @@
     "src": "/images/osaka-castle-dotonbori/20200128_110029.jpg",
     "time": "2020-01-28T11:00:29",
     "lat": 34.681508,
-    "lng": 135.53335
+    "lng": 135.53335,
+    "gpsSource": "borrowed:20200128_105946.jpg (±0.7min)"
   },
   {
     "file": "20200128_110456.jpg",
@@ -53,7 +54,8 @@
     "src": "/images/osaka-castle-dotonbori/20200128_114211.jpg",
     "time": "2020-01-28T11:42:11",
     "lat": 34.683413,
-    "lng": 135.528815
+    "lng": 135.528815,
+    "gpsSource": "borrowed:20200128_113443.jpg (±7.5min)"
   },
   {
     "file": "20200128_115604.jpg",
@@ -67,7 +69,8 @@
     "src": "/images/osaka-castle-dotonbori/20200128_121347.jpg",
     "time": "2020-01-28T12:13:47",
     "lat": 34.686617,
-    "lng": 135.520888
+    "lng": 135.520888,
+    "gpsSource": "borrowed:20200128_122045.jpg (±7.0min)"
   },
   {
     "file": "20200128_122045.jpg",
@@ -81,7 +84,8 @@
     "src": "/images/osaka-castle-dotonbori/20200128_122208.jpg",
     "time": "2020-01-28T12:22:08",
     "lat": 34.686617,
-    "lng": 135.520888
+    "lng": 135.520888,
+    "gpsSource": "borrowed:20200128_122045.jpg (±1.4min)"
   },
   {
     "file": "20200128_124223.jpg",
@@ -102,7 +106,8 @@
     "src": "/images/osaka-castle-dotonbori/20200128_142806.jpg",
     "time": "2020-01-28T14:28:06",
     "lat": 34.66634,
-    "lng": 135.503405
+    "lng": 135.503405,
+    "gpsSource": "extracted/IMG_20200128_142806_566_1580237842615.jpg"
   },
   {
     "file": "20200128_143213.jpg",
@@ -116,7 +121,8 @@
     "src": "/images/osaka-castle-dotonbori/20200128_151820.jpg",
     "time": "2020-01-28T15:18:20",
     "lat": 34.66634,
-    "lng": 135.503405
+    "lng": 135.503405,
+    "gpsSource": "borrowed:20200128_143213.jpg (±46.1min)"
   },
   {
     "file": "20200128_195900.jpg",

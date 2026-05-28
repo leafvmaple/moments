@@ -114,24 +114,33 @@ for (const r of records) {
   }
 }
 
-// Emit JSON for entries with GPS.
+// Emit JSON for entries with GPS. Track each photo's GPS source so the
+// user can audit and supplement borrowed/missing coordinates.
 const entries = [];
+const fallbackRecovered = [];
+const peerBorrowed = [];
+const skipped = [];
+
 for (const r of records) {
   if (!r.gps) {
-    console.warn(`! ${r.file}: no GPS in self / extracted / nearby peers, skipping`);
+    skipped.push(r.file);
     continue;
   }
   const publicPath = '/' + relative('public', r.abs).split(sep).join('/');
-  entries.push({
+  const entry = {
     file: r.file,
     src: publicPath,
     time: r.time,
     lat: r.gps.lat,
     lng: r.gps.lng,
-  });
+  };
   if (r.gpsSource !== 'self') {
-    console.log(`  ${r.file}: GPS from ${r.gpsSource}`);
+    // Persist the source so we never forget which markers are inferred.
+    entry.gpsSource = r.gpsSource;
+    if (r.gpsSource.startsWith('borrowed:')) peerBorrowed.push({ file: r.file, source: r.gpsSource });
+    else fallbackRecovered.push({ file: r.file, source: r.gpsSource });
   }
+  entries.push(entry);
 }
 
 entries.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
@@ -141,4 +150,26 @@ await mkdir(outDir, { recursive: true });
 const outPath = join(outDir, `${slug}.json`);
 await writeFile(outPath, JSON.stringify(entries, null, 2) + '\n');
 
-console.log(`${outPath}: ${entries.length} photos with GPS`);
+// Summary log — surface everything that didn't come from the photo's
+// own EXIF so the user can decide whether to supplement manually.
+console.log('');
+console.log(`=== GPS audit for ${slug} ===`);
+const selfCount = entries.length - fallbackRecovered.length - peerBorrowed.length;
+console.log(`  self EXIF:                ${selfCount}`);
+console.log(`  rescued from extracted/:  ${fallbackRecovered.length}`);
+for (const r of fallbackRecovered) console.log(`    ${r.file} <- ${r.source}`);
+console.log(`  borrowed from peer:       ${peerBorrowed.length}`);
+for (const r of peerBorrowed) {
+  const m = r.source.match(/±([\d.]+)min/);
+  const delta = m ? +m[1] : 0;
+  const flag = delta > 10 ? ' [REVIEW]' : '';
+  console.log(`    ${r.file} <- ${r.source}${flag}`);
+}
+console.log(`  missing entirely:         ${skipped.length}`);
+for (const f of skipped) console.log(`    ${f}  [SUPPLEMENT NEEDED]`);
+console.log(`  ----`);
+console.log(`  ${outPath}: ${entries.length} markers written`);
+if (peerBorrowed.some((r) => /±([\d.]+)min/.test(r.source) && +r.source.match(/±([\d.]+)min/)[1] > 10) ||
+    skipped.length > 0) {
+  console.log(`  → review entries marked [REVIEW] / [SUPPLEMENT NEEDED] above`);
+}
