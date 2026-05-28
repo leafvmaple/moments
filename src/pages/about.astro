@@ -1,0 +1,204 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+
+const timeline = [
+  { date: '2026-05', text: 'moments 站点上线。Astro 静态部署，复刻 Typecho handsome 调性。' },
+  { date: '——', text: '在代码与生活的缝隙里写字。' },
+];
+---
+
+<BaseLayout title="关于" description="关于 moments 与我。" pageTitle="关于">
+  <section class="about-card panel">
+    <header class="about-header">
+      <div class="avatar">
+        <span>叶</span>
+      </div>
+      <div>
+        <h1>leafvmaple</h1>
+        <p class="tagline">在代码缝隙里记录生活。</p>
+        <div class="links">
+          <a href="https://leafvmaple.com" target="_blank" rel="noopener noreferrer">
+            <Icon name="link" size={13} /> <span>leafvmaple.com</span>
+          </a>
+          <a href="https://github.com/leafvmaple" target="_blank" rel="noopener noreferrer">
+            <Icon name="github" size={13} /> <span>github.com/leafvmaple</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <section class="about-section">
+      <h2>关于这里</h2>
+      <p>
+        <strong>moments</strong> 是 <a href="https://leafvmaple.com">leafvmaple.com</a>
+        之外的另一面 —— 那边写代码、谈技术；这里写照片、音乐、读后感，以及生活里值得记下的零碎。
+      </p>
+      <p>
+        界面风格来自我多年前用过的 Typecho <em>handsome</em> 主题。
+        框架换成了 Astro，编译成纯静态 HTML，部署到 GitHub Pages。
+      </p>
+    </section>
+
+    <section class="about-section">
+      <h2>关于我</h2>
+      <p>
+        写代码为生。喜欢摄影、听老歌、看长篇小说。觉得"把当下记下来"这件事本身就有意义，
+        哪怕日后翻起来发现写得很笨。
+      </p>
+      <p class="placeholder-note">
+        （这里之后再慢慢补 —— 喜欢的乐队、读过的书、想去的地方……）
+      </p>
+    </section>
+
+    <section class="about-section">
+      <h2>时间线</h2>
+      <ol class="timeline">
+        {
+          timeline.map((item) => (
+            <li>
+              <span class="t-date">{item.date}</span>
+              <span class="t-text">{item.text}</span>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section class="about-section">
+      <h2>联系</h2>
+      <p>
+        想交换友链 / 聊聊 / 指出错别字：通过 GitHub Issue 或邮箱（写在
+        <a href="https://leafvmaple.com">主站</a> 页脚）。
+      </p>
+    </section>
+  </section>
+</BaseLayout>
+
+<style>
+  .about-card {
+    padding: var(--space-xl);
+  }
+
+  .about-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    padding-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: var(--space-lg);
+  }
+
+  .about-header h1 {
+    margin: 0 0 var(--space-xs);
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  .tagline {
+    margin: 0 0 var(--space-sm);
+    color: var(--color-text-muted);
+  }
+
+  .avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent-green));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 32px;
+    font-weight: 300;
+    flex-shrink: 0;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    font-size: 13px;
+  }
+
+  .links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--color-primary);
+  }
+
+  .about-section {
+    margin-bottom: var(--space-lg);
+  }
+
+  .about-section h2 {
+    font-size: 16px;
+    margin: 0 0 var(--space-sm);
+    color: var(--color-heading);
+    font-weight: 600;
+  }
+
+  .about-section p {
+    margin: 0 0 var(--space-sm);
+    line-height: 1.75;
+  }
+
+  .about-section a {
+    color: var(--color-primary);
+  }
+
+  .placeholder-note {
+    color: var(--color-text-muted);
+    font-size: 13px;
+    font-style: italic;
+  }
+
+  .timeline {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .timeline li {
+    display: flex;
+    gap: var(--space-md);
+    padding: var(--space-sm) 0;
+    border-left: 2px solid var(--color-border);
+    padding-left: var(--space-md);
+    position: relative;
+  }
+
+  .timeline li::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 14px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-primary);
+  }
+
+  .t-date {
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    min-width: 70px;
+    flex-shrink: 0;
+  }
+
+  .t-text {
+    color: var(--color-text);
+  }
+
+  @media (max-width: 600px) {
+    .about-header {
+      flex-direction: column;
+      text-align: center;
+    }
+    .links {
+      justify-content: center;
+    }
+  }
+</style>

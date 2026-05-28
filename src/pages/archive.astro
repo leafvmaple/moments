@@ -1,0 +1,153 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+
+type Post = Awaited<ReturnType<typeof getCollection<'posts'>>>[number];
+
+const posts = (await getCollection('posts')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+const grouped = new Map<number, Post[]>();
+for (const p of posts) {
+  const y = p.data.date.getFullYear();
+  const list = grouped.get(y) ?? [];
+  list.push(p);
+  grouped.set(y, list);
+}
+const years = Array.from(grouped.keys()).sort((a, b) => b - a);
+---
+
+<BaseLayout title="归档" description="按年份归档的全部文章。" pageTitle="归档">
+  <section class="archive-intro panel">
+    <h1>归档 · Archive</h1>
+    <p>全部 {posts.length} 篇文章，按年份排列。</p>
+  </section>
+
+  {
+    years.map((year) => (
+      <section class="year-block panel">
+        <header class="year-header">
+          <Icon name="calendar" size={14} />
+          <h2>{year}</h2>
+          <span class="year-count">{grouped.get(year)!.length} 篇</span>
+        </header>
+        <ol class="post-list">
+          {grouped.get(year)!.map((p) => {
+            const m = String(p.data.date.getMonth() + 1).padStart(2, '0');
+            const d = String(p.data.date.getDate()).padStart(2, '0');
+            return (
+              <li>
+                <span class="post-date">{m}-{d}</span>
+                <a href={`/posts/${p.id}`} class="post-link">
+                  {p.data.title}
+                </a>
+                {p.data.tags.length > 0 && (
+                  <span class="post-tags">
+                    {p.data.tags.map((t) => (
+                      <a class="tag-chip" href={`/tags/${t}`}>#{t}</a>
+                    ))}
+                  </span>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+    ))
+  }
+</BaseLayout>
+
+<style>
+  .archive-intro {
+    margin-bottom: var(--space-lg);
+  }
+
+  .archive-intro h1 {
+    margin: 0 0 var(--space-sm);
+    font-weight: 300;
+    font-size: 24px;
+  }
+
+  .archive-intro p {
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
+  .year-block {
+    margin-bottom: var(--space-md);
+  }
+
+  .year-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: var(--space-md);
+  }
+
+  .year-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .year-count {
+    color: var(--color-text-muted);
+    font-size: 12px;
+    margin-left: auto;
+  }
+
+  .post-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .post-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-sm) 0;
+    border-bottom: 1px dashed var(--color-border);
+    flex-wrap: wrap;
+  }
+
+  .post-list li:last-child {
+    border-bottom: none;
+  }
+
+  .post-date {
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .post-link {
+    color: var(--color-text);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .post-link:hover {
+    color: var(--color-primary);
+  }
+
+  .post-tags {
+    display: inline-flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .tag-chip {
+    font-size: 12px;
+    color: var(--color-text-muted);
+  }
+
+  .tag-chip:hover {
+    color: var(--color-primary);
+  }
+</style>

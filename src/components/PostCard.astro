@@ -50,7 +50,7 @@ const formattedDate = `${date.getFullYear()} 年 ${String(date.getMonth() + 1).p
         tags.length > 0 && (
           <span class="meta-tags">
             {tags.map((t) => (
-              <a class="tag-chip" href={`/`}>
+              <a class="tag-chip" href={`/tags/${t}`}>
                 #{t}
               </a>
             ))}

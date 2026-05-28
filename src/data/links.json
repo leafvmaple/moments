@@ -1,0 +1,29 @@
+{
+  "groups": [
+    {
+      "title": "自己的地方",
+      "items": [
+        {
+          "name": "leafvmaple.com",
+          "url": "https://leafvmaple.com",
+          "desc": "技术博客 · 代码与思考"
+        },
+        {
+          "name": "GitHub",
+          "url": "https://github.com/leafvmaple",
+          "desc": "github.com/leafvmaple"
+        }
+      ]
+    },
+    {
+      "title": "朋友们",
+      "items": [
+        {
+          "name": "示例友链",
+          "url": "https://example.com",
+          "desc": "占位 · 等你把朋友们填进来"
+        }
+      ]
+    }
+  ]
+}

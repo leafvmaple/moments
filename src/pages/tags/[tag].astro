@@ -1,0 +1,68 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Sidebar from '../../components/Sidebar.astro';
+import PostCard from '../../components/PostCard.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+  const tagMap = new Map<string, typeof posts>();
+  for (const p of posts) {
+    for (const t of p.data.tags) {
+      const list = tagMap.get(t) ?? [];
+      list.push(p);
+      tagMap.set(t, list);
+    }
+  }
+  return Array.from(tagMap.entries()).map(([tag, taggedPosts]) => ({
+    params: { tag },
+    props: {
+      tag,
+      posts: taggedPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf()),
+    },
+  }));
+}
+
+type Post = Awaited<ReturnType<typeof getCollection<'posts'>>>[number];
+type Props = { tag: string; posts: Post[] };
+
+const { tag, posts } = Astro.props as Props;
+---
+
+<BaseLayout title={`#${tag}`} description={`标签 ${tag} 下的文章。`} pageTitle={`#${tag}`}>
+  <div class="content-grid">
+    <section class="content-main">
+      <header class="page-header">
+        <h1>#{tag}</h1>
+        <p>共 {posts.length} 篇</p>
+      </header>
+      {
+        posts.map((p) => (
+          <PostCard
+            title={p.data.title}
+            date={p.data.date}
+            excerpt={p.data.excerpt}
+            tags={p.data.tags}
+            cover={p.data.cover}
+            href={`/posts/${p.id}`}
+          />
+        ))
+      }
+    </section>
+    <Sidebar />
+  </div>
+</BaseLayout>
+
+<style>
+  .page-header h1 {
+    font-size: 28px;
+    color: var(--color-heading);
+    margin: 0 0 var(--space-sm);
+    font-weight: 300;
+  }
+
+  .page-header p {
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-md);
+  }
+</style>

@@ -1,0 +1,116 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import links from '../data/links.json';
+
+interface LinkItem {
+  name: string;
+  url: string;
+  desc?: string;
+}
+
+interface LinkGroup {
+  title: string;
+  items: LinkItem[];
+}
+
+const groups = (links as { groups: LinkGroup[] }).groups;
+---
+
+<BaseLayout title="友链" description="朋友们的站点。" pageTitle="友链">
+  <section class="links-intro panel">
+    <h1>友链 · Links</h1>
+    <p>互联网上还有很多有趣的角落。</p>
+    <p class="exchange">
+      想交换友链？在 <a href="/about">关于</a> 页面找到我。
+    </p>
+  </section>
+
+  {
+    groups.map((group) => (
+      <section class="link-group">
+        <h2 class="group-title">{group.title}</h2>
+        <div class="link-grid">
+          {group.items.map((item) => (
+            <a class="link-card panel" href={item.url} target="_blank" rel="noopener noreferrer">
+              <div class="link-name">
+                <span>{item.name}</span>
+                <Icon name="link" size={12} />
+              </div>
+              {item.desc && <p class="link-desc">{item.desc}</p>}
+            </a>
+          ))}
+        </div>
+      </section>
+    ))
+  }
+</BaseLayout>
+
+<style>
+  .links-intro {
+    margin-bottom: var(--space-lg);
+  }
+
+  .links-intro h1 {
+    margin: 0 0 var(--space-sm);
+    font-weight: 300;
+    font-size: 24px;
+  }
+
+  .links-intro p {
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-sm);
+  }
+
+  .exchange a {
+    color: var(--color-primary);
+  }
+
+  .link-group {
+    margin-bottom: var(--space-lg);
+  }
+
+  .group-title {
+    font-size: 15px;
+    color: var(--color-heading);
+    margin: 0 0 var(--space-md);
+    font-weight: 600;
+  }
+
+  .link-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--space-md);
+  }
+
+  .link-card {
+    padding: var(--space-md);
+    color: var(--color-text);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+
+  .link-card:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-2px);
+  }
+
+  .link-name {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    color: var(--color-heading);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .link-card:hover .link-name {
+    color: var(--color-primary);
+  }
+
+  .link-desc {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 12px;
+  }
+</style>
