@@ -179,4 +179,58 @@ const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
   .aside-footer a:hover {
     color: var(--color-primary);
   }
+
+  /* ------------------------------------------------------------------
+     Mobile: collapse the aside into a compact top bar — brand on the
+     left, horizontal scrollable nav on the right. Profile + footer hide.
+     ------------------------------------------------------------------ */
+  @media (max-width: 900px) {
+    .app-aside {
+      padding: 0;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: var(--space-sm);
+      height: 52px;
+    }
+
+    .brand {
+      padding: 0 var(--space-md);
+      flex-shrink: 0;
+    }
+
+    .profile,
+    .aside-footer {
+      display: none;
+    }
+
+    .nav {
+      flex-direction: row;
+      padding: 0;
+      flex: 1;
+      gap: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-item {
+      padding: 0 var(--space-md);
+      height: 52px;
+      flex-shrink: 0;
+      font-size: 13px;
+      gap: 6px;
+    }
+
+    .nav-item span {
+      flex: none;
+    }
+
+    .nav-chevron {
+      display: none;
+    }
+  }
 </style>
