@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# raw photo originals + zip archives (kept locally as backup; processed copies live in public/images/)
+photos/
