@@ -4,6 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Sidebar from '../../components/Sidebar.astro';
 import Icon from '../../components/Icon.astro';
 import Comments from '../../components/Comments.astro';
+import TrailMap from '../../components/TrailMap.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts');
@@ -53,6 +54,7 @@ const formattedDate = `${post.data.date.getFullYear()} 年 ${String(post.data.da
               )
             }
           </div>
+          <TrailMap slug={post.id} />
           <div class="markdown-body">
             <Content />
           </div>

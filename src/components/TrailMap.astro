@@ -1,0 +1,200 @@
+---
+// Renders a Leaflet map of a post's photo trajectory.
+// Pass a slug; the component imports src/data/photo-meta/<slug>.json at build
+// and ships only the points (no EXIF, no thumbnails > full path) to the client.
+// If no meta file exists, renders nothing.
+
+interface Props {
+  slug: string;
+}
+const { slug } = Astro.props as Props;
+
+let points: Array<{ file: string; src: string; time: string; lat: number; lng: number }> = [];
+try {
+  points = (await import(`../data/photo-meta/${slug}.json`)).default;
+} catch {
+  // No trail data for this post — render nothing.
+}
+
+// Group photos that share an exact coordinate into one marker. Multiple
+// photos at the same point (e.g. four shots from the same spot on the bridge)
+// otherwise stack into illegible overlapping markers.
+const groups = new Map<string, typeof points>();
+for (const p of points) {
+  const key = `${p.lat},${p.lng}`;
+  if (!groups.has(key)) groups.set(key, []);
+  groups.get(key)!.push(p);
+}
+const markers = Array.from(groups.values()).map((g) => ({
+  lat: g[0].lat,
+  lng: g[0].lng,
+  photos: g,
+}));
+---
+
+{
+  points.length > 0 && (
+    <figure class="trail-map">
+      <div id={`trail-map-${slug}`} class="trail-map-canvas" data-points={JSON.stringify(markers)} />
+      <figcaption>
+        <span>{points.length} 张照片的实际拍摄位置 · CARTO / OSM</span>
+      </figcaption>
+    </figure>
+  )
+}
+
+<script>
+  import 'leaflet/dist/leaflet.css';
+  import L from 'leaflet';
+
+  // Lazy-init Leaflet only when a trail-map canvas appears on the page.
+  async function initTrailMaps() {
+    const canvases = document.querySelectorAll<HTMLElement>('.trail-map-canvas');
+    if (canvases.length === 0) return;
+
+    for (const el of canvases) {
+      const raw = el.dataset.points;
+      if (!raw) continue;
+      const markers = JSON.parse(raw) as Array<{
+        lat: number;
+        lng: number;
+        photos: Array<{ file: string; src: string; time: string }>;
+      }>;
+      if (markers.length === 0) continue;
+
+      const map = L.map(el);
+      // CARTO Voyager: OSM-derived, WGS-84 (matches EXIF), free for OSS,
+      // accessible from mainland China unlike tile.openstreetmap.org.
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
+        subdomains: 'abcd',
+        maxZoom: 19,
+      }).addTo(map);
+
+      // Order markers by first-photo time so the trail line follows the trip.
+      const ordered = markers
+        .slice()
+        .sort((a, b) => a.photos[0].time.localeCompare(b.photos[0].time));
+
+      // Haversine in km — used to decide whether consecutive markers are a
+      // walking segment (solid line) or a transit jump (dashed line).
+      const kmBetween = (a: typeof ordered[0], b: typeof ordered[0]) => {
+        const R = 6371;
+        const toRad = (d: number) => (d * Math.PI) / 180;
+        const dLat = toRad(b.lat - a.lat);
+        const dLng = toRad(b.lng - a.lng);
+        const s =
+          Math.sin(dLat / 2) ** 2 +
+          Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+        return 2 * R * Math.asin(Math.sqrt(s));
+      };
+
+      // Draw segments first so markers render on top.
+      for (let i = 0; i < ordered.length - 1; i++) {
+        const a = ordered[i];
+        const b = ordered[i + 1];
+        const minutes =
+          (new Date(b.photos[0].time).getTime() - new Date(a.photos[0].time).getTime()) /
+          60000;
+        const isTransit = minutes > 30 || kmBetween(a, b) > 1;
+        L.polyline(
+          [
+            [a.lat, a.lng],
+            [b.lat, b.lng],
+          ],
+          {
+            color: isTransit ? '#888' : '#e85d4a',
+            weight: isTransit ? 2 : 3,
+            opacity: 0.85,
+            dashArray: isTransit ? '6, 8' : undefined,
+          },
+        ).addTo(map);
+      }
+
+      const bounds: [number, number][] = [];
+      for (const m of ordered) {
+        bounds.push([m.lat, m.lng]);
+        const dot = L.circleMarker([m.lat, m.lng], {
+          radius: 6,
+          color: '#fff',
+          weight: 2,
+          fillColor: '#e85d4a',
+          fillOpacity: 0.95,
+        }).addTo(map);
+        const html = m.photos
+          .map(
+            (p) =>
+              `<a href="${p.src}" target="_blank" rel="noopener" class="trail-pop">
+                 <img src="${p.src}" loading="lazy" alt="" />
+                 <span>${p.time.slice(11, 16)}</span>
+               </a>`,
+          )
+          .join('');
+        dot.bindPopup(`<div class="trail-pop-grid">${html}</div>`, { maxWidth: 280 });
+      }
+
+      map.fitBounds(bounds, { padding: [24, 24] });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initTrailMaps);
+  } else {
+    initTrailMaps();
+  }
+</script>
+
+<style>
+  .trail-map {
+    margin: 0 0 var(--space-lg);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    background: var(--color-bg-card);
+  }
+
+  .trail-map-canvas {
+    width: 100%;
+    height: 320px;
+    background: #e8eef3;
+  }
+
+  .trail-map figcaption {
+    padding: 8px 14px;
+    font-size: 12px;
+    color: var(--color-text-muted);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  :global(.trail-pop-grid) {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 4px;
+    max-width: 260px;
+  }
+  :global(.trail-pop) {
+    position: relative;
+    display: block;
+    line-height: 0;
+  }
+  :global(.trail-pop img) {
+    width: 100%;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    display: block;
+  }
+  :global(.trail-pop span) {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-size: 10px;
+    padding: 1px 4px;
+    border-radius: 2px;
+    line-height: 1.2;
+  }
+</style>
