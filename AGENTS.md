@@ -166,6 +166,25 @@ magick "$path" -modulate 100,120,100 -quality 88 "$path"  # 1.2x 已是上限
 > 这一节是**按需**：如果用户对 compress 后的整组观感就已经满意，跳过即可。但如果做了，
 > 一定要在 commit message 里写明 "selective sky touch-up" + 调了哪几张，未来回查能复现。
 
+### 7.6 行动轨迹地图（按需）
+
+如果想给这篇游记加一张「实际拍摄位置」的地图（顶部 cover 下、正文之上），
+在压缩 + 天空调整都做完之后跑：
+
+```powershell
+node scripts/extract-photo-meta.mjs <slug> public/images/<image-dir>
+```
+
+`<slug>` 是文章 markdown 文件名（无 `.md`），`<image-dir>` 是图所在的子目录名 ——
+两者**不一定相等**（如 `kyoto-winter.md` 配 `public/images/kyoto/`）。脚本读每张
+JPEG 的 EXIF GPS + 文件名时间戳，输出 `src/data/photo-meta/<slug>.json`。
+`src/pages/posts/[...slug].astro` 已挂 `<TrailMap slug={post.id} />`，有对应 json
+就自动渲染，没有就空 —— **新增博文不需要改任何代码**，只要跑一次脚本。
+
+- 没 GPS 的图会被跳过（控制台 warn 列出文件名）—— 室内拍 / 关了定位的情况正常
+- 完全没 GPS 数据的 slug 不需要跑脚本；JSON 不存在地图就不显示
+- 多张同坐标的照片会自动合并成一个 marker，弹窗里横向排照片缩略图
+
 ### 8. 发布
 
 `.gitignore` 已把 `photos/` 整体忽略 —— 原图 + zip 留本地作备份，仓库只放
