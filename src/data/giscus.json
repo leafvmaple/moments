@@ -1,0 +1,13 @@
+{
+  "enabled": false,
+  "repo": "",
+  "repoId": "",
+  "category": "Comments",
+  "categoryId": "",
+  "mapping": "pathname",
+  "strict": "0",
+  "reactionsEnabled": "1",
+  "emitMetadata": "0",
+  "inputPosition": "top",
+  "lang": "zh-CN"
+}

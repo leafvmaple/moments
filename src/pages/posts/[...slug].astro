@@ -3,6 +3,7 @@ import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Sidebar from '../../components/Sidebar.astro';
 import Icon from '../../components/Icon.astro';
+import Comments from '../../components/Comments.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts');
@@ -22,34 +23,37 @@ const formattedDate = `${post.data.date.getFullYear()} 年 ${String(post.data.da
 
 <BaseLayout title={post.data.title} description={post.data.excerpt} pageTitle={post.data.title}>
   <div class="content-grid">
-    <article class="content-main post">
-      {post.data.cover && <img src={post.data.cover} alt={post.data.title} class="post-cover" />}
-      <div class="post-body">
-        <h1 class="post-title">{post.data.title}</h1>
-        <div class="post-meta">
-          <span class="meta-item">
-            <Icon name="user" size={13} />
-            <span>leafvmaple</span>
-          </span>
-          <span class="meta-item">
-            <Icon name="clock" size={13} />
-            <span>{formattedDate}</span>
-          </span>
-          {
-            post.data.tags.length > 0 && (
-              <span class="post-tags">
-                {post.data.tags.map((t) => (
-                  <span class="badge">#{t}</span>
-                ))}
-              </span>
-            )
-          }
+    <div class="content-main">
+      <article class="post">
+        {post.data.cover && <img src={post.data.cover} alt={post.data.title} class="post-cover" />}
+        <div class="post-body">
+          <h1 class="post-title">{post.data.title}</h1>
+          <div class="post-meta">
+            <span class="meta-item">
+              <Icon name="user" size={13} />
+              <span>leafvmaple</span>
+            </span>
+            <span class="meta-item">
+              <Icon name="clock" size={13} />
+              <span>{formattedDate}</span>
+            </span>
+            {
+              post.data.tags.length > 0 && (
+                <span class="post-tags">
+                  {post.data.tags.map((t) => (
+                    <a class="badge" href={`/tags/${t}`}>#{t}</a>
+                  ))}
+                </span>
+              )
+            }
+          </div>
+          <div class="markdown-body">
+            <Content />
+          </div>
         </div>
-        <div class="markdown-body">
-          <Content />
-        </div>
-      </div>
-    </article>
+      </article>
+      <Comments />
+    </div>
     <Sidebar excludeSlug={post.id} />
   </div>
 </BaseLayout>

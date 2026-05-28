@@ -1,0 +1,138 @@
+---
+import Icon from './Icon.astro';
+import config from '../data/giscus.json';
+
+const cfg = config as {
+  enabled: boolean;
+  repo: string;
+  repoId: string;
+  category: string;
+  categoryId: string;
+  mapping: string;
+  strict: string;
+  reactionsEnabled: string;
+  emitMetadata: string;
+  inputPosition: string;
+  lang: string;
+};
+
+const ready = cfg.enabled && cfg.repo && cfg.repoId && cfg.categoryId;
+---
+
+<section class="comments panel">
+  <h3 class="comments-title">
+    <Icon name="messageCircle" size={14} />
+    <span>评论</span>
+  </h3>
+
+  {
+    ready ? (
+      <div class="giscus-host">
+        <script
+          src="https://giscus.app/client.js"
+          data-repo={cfg.repo}
+          data-repo-id={cfg.repoId}
+          data-category={cfg.category}
+          data-category-id={cfg.categoryId}
+          data-mapping={cfg.mapping}
+          data-strict={cfg.strict}
+          data-reactions-enabled={cfg.reactionsEnabled}
+          data-emit-metadata={cfg.emitMetadata}
+          data-input-position={cfg.inputPosition}
+          data-theme={`preferred_color_scheme`}
+          data-lang={cfg.lang}
+          crossorigin="anonymous"
+          async
+        />
+      </div>
+    ) : (
+      <div class="comments-stub">
+        <p>评论功能由 <a href="https://giscus.app" target="_blank" rel="noopener noreferrer">giscus</a>（GitHub Discussions）驱动，当前未启用。</p>
+        <details>
+          <summary>启用步骤</summary>
+          <ol>
+            <li>在仓库 <code>Settings → Features</code> 开启 <strong>Discussions</strong>。</li>
+            <li>建一个 <code>Comments</code> 分类（Announcement 类型）。</li>
+            <li>到 <a href="https://giscus.app" target="_blank" rel="noopener noreferrer">giscus.app</a> 生成配置，复制 <code>data-repo-id</code> 与 <code>data-category-id</code>。</li>
+            <li>填入 <code>src/data/giscus.json</code>，把 <code>enabled</code> 改成 <code>true</code>。</li>
+          </ol>
+        </details>
+      </div>
+    )
+  }
+</section>
+
+{
+  ready && (
+    <script is:inline>
+      (() => {
+        const obs = new MutationObserver(() => {
+          const next = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow?.postMessage(
+            { giscus: { setConfig: { theme: next } } },
+            'https://giscus.app'
+          );
+        });
+        obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+      })();
+    </script>
+  )
+}
+
+<style>
+  .comments {
+    margin-top: var(--space-lg);
+  }
+
+  .comments-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-heading);
+    margin: 0 0 var(--space-md);
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .comments-stub {
+    color: var(--color-text-muted);
+    font-size: 13px;
+  }
+
+  .comments-stub p {
+    margin: 0 0 var(--space-sm);
+  }
+
+  .comments-stub a {
+    color: var(--color-primary);
+  }
+
+  .comments-stub details {
+    background: var(--color-bg-subtle);
+    border-radius: var(--radius-card);
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .comments-stub summary {
+    cursor: pointer;
+    color: var(--color-heading);
+    font-weight: 600;
+  }
+
+  .comments-stub ol {
+    margin: var(--space-sm) 0 0;
+    padding-left: 1.4em;
+  }
+
+  .comments-stub li {
+    margin-bottom: 4px;
+  }
+
+  .comments-stub code {
+    font-size: 0.85em;
+  }
+</style>
