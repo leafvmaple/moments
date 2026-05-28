@@ -5,9 +5,20 @@
 // Reads EXIF (timestamp + GPS) from every .jpg in <imageDir>, writes
 // src/data/photo-meta/<slug>.json sorted by capture time. The Astro
 // trail-map component consumes this JSON at build time.
+//
+// GPS fallback chain (per photo):
+//   1. EXIF GPS in the public file itself.
+//   2. EXIF GPS in photos/extracted/IMG_*_<HHMMSS>*.jpg with matching
+//      timestamp (rescue from re-saved or Snapseed-stripped versions).
+//   3. Nearest GPS-bearing peer in the same slug within ±60 minutes
+//      (borrow location for files that never had GPS but are clearly
+//      at the same scene/neighborhood as their neighbors). 60 min is
+//      tight enough that travel typically stays in one district.
+//   4. Skip with warning — no usable coordinates anywhere.
 
 import { readdir, mkdir, writeFile } from 'node:fs/promises';
-import { join, basename, relative, sep } from 'node:path';
+import { join, relative, sep } from 'node:path';
+import { existsSync } from 'node:fs';
 import exifr from 'exifr';
 
 const [, , slug, imageDir] = process.argv;
@@ -16,42 +27,111 @@ if (!slug || !imageDir) {
   process.exit(1);
 }
 
+const EXTRACTED_DIR = 'photos/extracted';
+
 // Filename is canonical local-time source — YYYYMMDD_HHMMSS.jpg matches
 // what the user sees in the post.
 function parseFilenameTime(name) {
   const m = name.match(/^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/);
   if (!m) return null;
   const [, Y, M, D, h, mi, s] = m;
-  return `${Y}-${M}-${D}T${h}:${mi}:${s}`;
+  return { iso: `${Y}-${M}-${D}T${h}:${mi}:${s}`, date: `${Y}${M}${D}`, hhmmss: `${h}${mi}${s}` };
+}
+
+async function readGps(path) {
+  try {
+    const gps = await exifr.parse(path, { gps: true });
+    if (gps && gps.latitude != null && gps.longitude != null) {
+      return { lat: +gps.latitude.toFixed(6), lng: +gps.longitude.toFixed(6) };
+    }
+  } catch {}
+  return null;
+}
+
+// Look in photos/extracted/ for an IMG_<date>_<hhmmss>*.jpg with usable GPS.
+async function rescueFromExtracted(date, hhmmss) {
+  if (!existsSync(EXTRACTED_DIR)) return null;
+  let candidates;
+  try {
+    candidates = await readdir(EXTRACTED_DIR);
+  } catch {
+    return null;
+  }
+  const prefix = `IMG_${date}_${hhmmss}`;
+  for (const name of candidates) {
+    if (!name.startsWith(prefix)) continue;
+    const gps = await readGps(join(EXTRACTED_DIR, name));
+    if (gps) return { ...gps, source: `extracted/${name}` };
+  }
+  return null;
 }
 
 const files = (await readdir(imageDir))
   .filter((f) => /\.jpe?g$/i.test(f))
   .sort();
 
-const entries = [];
+// Pass 1: collect filename metadata + public-file GPS + extracted-rescue GPS.
+const records = [];
 for (const f of files) {
   const abs = join(imageDir, f);
-  let gps = null;
-  try {
-    gps = await exifr.parse(abs, { gps: true });
-  } catch (e) {
-    console.warn(`! ${f}: EXIF read failed (${e.message})`);
-  }
-  const time = parseFilenameTime(f);
-  if (!gps || gps.latitude == null || gps.longitude == null) {
-    console.warn(`! ${f}: no GPS, skipping`);
+  const t = parseFilenameTime(f);
+  if (!t) {
+    console.warn(`! ${f}: filename does not match YYYYMMDD_HHMMSS pattern, skipping`);
     continue;
   }
-  // Public URL path — strip "public/" prefix so it works in <img src>.
-  const publicPath = '/' + relative('public', abs).split(sep).join('/');
+  let gps = await readGps(abs);
+  let gpsSource = gps ? 'self' : null;
+  if (!gps) {
+    const rescued = await rescueFromExtracted(t.date, t.hhmmss);
+    if (rescued) {
+      gps = { lat: rescued.lat, lng: rescued.lng };
+      gpsSource = rescued.source;
+    }
+  }
+  records.push({ file: f, time: t.iso, hhmmss: t.hhmmss, abs, gps, gpsSource });
+}
+
+// Pass 2: borrow from nearest GPS-bearing peer for any still missing.
+const withGps = records.filter((r) => r.gps);
+const NEIGHBOR_WINDOW_MIN = 60;
+function minutesBetween(a, b) {
+  return Math.abs(new Date(a).getTime() - new Date(b).getTime()) / 60000;
+}
+for (const r of records) {
+  if (r.gps) continue;
+  let best = null;
+  let bestDelta = Infinity;
+  for (const peer of withGps) {
+    const delta = minutesBetween(r.time, peer.time);
+    if (delta < bestDelta) {
+      bestDelta = delta;
+      best = peer;
+    }
+  }
+  if (best && bestDelta <= NEIGHBOR_WINDOW_MIN) {
+    r.gps = { lat: best.gps.lat, lng: best.gps.lng };
+    r.gpsSource = `borrowed:${best.file} (±${bestDelta.toFixed(1)}min)`;
+  }
+}
+
+// Emit JSON for entries with GPS.
+const entries = [];
+for (const r of records) {
+  if (!r.gps) {
+    console.warn(`! ${r.file}: no GPS in self / extracted / nearby peers, skipping`);
+    continue;
+  }
+  const publicPath = '/' + relative('public', r.abs).split(sep).join('/');
   entries.push({
-    file: f,
+    file: r.file,
     src: publicPath,
-    time,
-    lat: +gps.latitude.toFixed(6),
-    lng: +gps.longitude.toFixed(6),
+    time: r.time,
+    lat: r.gps.lat,
+    lng: r.gps.lng,
   });
+  if (r.gpsSource !== 'self') {
+    console.log(`  ${r.file}: GPS from ${r.gpsSource}`);
+  }
 }
 
 entries.sort((a, b) => (a.time || '').localeCompare(b.time || ''));

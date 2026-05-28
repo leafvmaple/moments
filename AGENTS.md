@@ -181,7 +181,18 @@ JPEG 的 EXIF GPS + 文件名时间戳，输出 `src/data/photo-meta/<slug>.json
 `src/pages/posts/[...slug].astro` 已挂 `<TrailMap slug={post.id} />`，有对应 json
 就自动渲染，没有就空 —— **新增博文不需要改任何代码**，只要跑一次脚本。
 
-- 没 GPS 的图会被跳过（控制台 warn 列出文件名）—— 室内拍 / 关了定位的情况正常
+**GPS 三级 fallback**（脚本自动按顺序尝试）：
+
+1. **public 文件自己的 EXIF GPS** —— 多数情况走这条
+2. **`photos/extracted/` 里同 HHMMSS 的原始 IMG_** —— 救那些被 Snapseed / 相册软件
+   重新保存后 EXIF 被剥掉的（如本地 P 过的 `-EDIT` 版本）
+3. **同组最近时间邻居（±60 min）** —— 救完全没 GPS 来源的文件（如 Snapseed 导出），
+   借走时间最近的那张的 GPS。对旅行场景一般 1 小时内人不会离开本地段太远
+
+跑完会在 console 标出"GPS from extracted/..." 或 "GPS from borrowed:... (±N min)"，
+**借用窗口 >10min 的要扫一眼**确认 borrowed 那张确实在同一片区域（同神社、同街区）。
+如果借错了（比如下午在另一区拍），可以手动把那一条从 JSON 里删掉，map 上不显示即可。
+
 - 完全没 GPS 数据的 slug 不需要跑脚本；JSON 不存在地图就不显示
 - 多张同坐标的照片会自动合并成一个 marker，弹窗里横向排照片缩略图
 
