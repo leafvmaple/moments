@@ -205,3 +205,57 @@ if (peerBorrowed.some((r) => /±([\d.]+)min/.test(r.source) && +r.source.match(/
     skipped.length > 0) {
   console.log(`  → review entries marked [REVIEW] / [SUPPLEMENT NEEDED] above`);
 }
+
+// Sync TODO.md with this slug's "needs supplement" entries (borrowed +
+// skipped). Preserves checked items and entries from other slugs.
+await updateTodo(slug, peerBorrowed, skipped);
+
+async function updateTodo(slug, borrowed, missing) {
+  const todoPath = 'TODO.md';
+  if (!existsSync(todoPath)) return;
+  const START = '<!-- GPS_TODO:START -->';
+  const END = '<!-- GPS_TODO:END -->';
+  const newForSlug = [
+    ...borrowed.map((r) => ({ path: `${slug}/${r.file}`, source: r.source })),
+    ...missing.map((f) => ({ path: `${slug}/${f}`, source: 'missing entirely' })),
+  ];
+  let todo = await readFile(todoPath, 'utf8');
+  const sIdx = todo.indexOf(START);
+  const eIdx = todo.indexOf(END);
+  // Parse existing items (preserve check state and items from other slugs).
+  const existing = [];
+  if (sIdx !== -1 && eIdx !== -1 && sIdx < eIdx) {
+    for (const line of todo.slice(sIdx + START.length, eIdx).split('\n')) {
+      const m = line.match(/^- \[([ x])\] (\S+) — (.+)$/);
+      if (m) existing.push({ checked: m[1] === 'x', path: m[2], source: m[3] });
+    }
+  }
+  const otherSlug = existing.filter((i) => !i.path.startsWith(slug + '/'));
+  const currentSlugExisting = existing.filter((i) => i.path.startsWith(slug + '/'));
+  const currentSlug = newForSlug.map((np) => {
+    const prev = currentSlugExisting.find((i) => i.path === np.path);
+    return { checked: prev ? prev.checked : false, path: np.path, source: np.source };
+  });
+  const merged = [...otherSlug, ...currentSlug].sort((a, b) => a.path.localeCompare(b.path));
+  const rendered = merged.map((i) => `- [${i.checked ? 'x' : ' '}] ${i.path} — ${i.source}`).join('\n');
+  if (sIdx !== -1 && eIdx !== -1) {
+    todo = todo.slice(0, sIdx) + START + '\n' + rendered + '\n' + todo.slice(eIdx);
+  } else {
+    const newSection = `
+
+## 待补全坐标 (Trail Map)
+
+> 自动生成区域：跑 \`extract-photo-meta.mjs\` 时会刷新下面这段（保留勾过的 \`[x]\` 和其他 slug 的条目）。
+>
+> - 资料够认出地标 → 把 \`src/data/photo-meta/<slug>.json\` 对应条目的 lat/lng 改对、加 \`"manual": true\` —— 下次跑就从这里消失
+> - 借用的坐标已经足够近、可以接受 → 把 \`[ ]\` 改成 \`[x]\` —— 下次跑保留 \`[x]\` 标记
+
+${START}
+${rendered}
+${END}
+`;
+    todo = todo.trimEnd() + newSection;
+  }
+  await writeFile(todoPath, todo);
+  console.log(`  TODO.md: ${currentSlug.length} entries for ${slug}`);
+}

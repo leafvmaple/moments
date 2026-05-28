@@ -210,6 +210,14 @@ JPEG 的 EXIF GPS + 文件名时间戳，输出 `src/data/photo-meta/<slug>.json
 带 `manual: true` 的条目在下次跑脚本时会被原样保留，不会被 EXIF/extracted/borrowed
 任何一档覆盖。审计块里会单独列出 "manual (preserved): N"。
 
+**TODO 自动同步**：每次跑脚本都会刷新 `TODO.md` 里 `<!-- GPS_TODO:START -->` 到
+`<!-- GPS_TODO:END -->` 之间这段，列出当前 slug 所有走了 `borrowed:` fallback 的图
+（manual / extracted / self 的不进 TODO）。其他 slug 的条目和已勾选 `[x]` 的状态都被
+保留。解决方式：
+
+- 看图能定位 → 改 JSON `lat/lng` + 加 `"manual": true` → 下次跑自动消失
+- 借用坐标可接受 → 在 TODO 里把 `[ ]` 改成 `[x]` → 下次跑保留 `[x]`
+
 - 完全没 GPS 数据的 slug 不需要跑脚本；JSON 不存在地图就不显示
 - 多张同坐标的照片会自动合并成一个 marker，弹窗里横向排照片缩略图
 

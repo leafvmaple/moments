@@ -57,3 +57,24 @@
 - 阅读时长估算、TOC、目录粘性侧边 —— 文章变多了再说。
 - 音乐播放器跨页面真正持续（view transitions / 持久 shell）。
 - quick-tabs 的"推荐"换成真实指标（阅读量 / 点赞数 / 评论数），需要先接上后端或者埋点。
+
+## 待补全坐标 (Trail Map)
+
+> 自动生成区域：跑 `extract-photo-meta.mjs` 时会刷新下面这段（保留勾过的 `[x]` 和其他 slug 的条目）。
+>
+> - 资料够认出地标 → 把 `src/data/photo-meta/<slug>.json` 对应条目的 lat/lng 改对、加 `"manual": true` —— 下次跑就从这里消失
+> - 借用的坐标已经足够近、可以接受 → 把 `[ ]` 改成 `[x]` —— 下次跑保留 `[x]` 标记
+
+<!-- GPS_TODO:START -->
+- [ ] kyoto-winter/20200129_115705.jpg — borrowed:20200129_115131.jpg (±5.6min)
+- [ ] kyoto-winter/20200129_120147.jpg — borrowed:20200129_120814.jpg (±6.5min)
+- [ ] kyoto-winter/20200129_133030.jpg — borrowed:20200129_132659.jpg (±3.5min)
+- [ ] kyoto-winter/20200129_133118.jpg — borrowed:20200129_132659.jpg (±4.3min)
+- [ ] kyoto-winter/20200129_145240.jpg — borrowed:20200129_145110.jpg (±1.5min)
+- [ ] kyoto-winter/20200129_145428.jpg — borrowed:20200129_145110.jpg (±3.3min)
+- [ ] kyoto-winter/20200129_152834.jpg — borrowed:20200129_153238.jpg (±4.1min)
+- [ ] osaka-castle-dotonbori/20200128_110029.jpg — borrowed:20200128_105946.jpg (±0.7min)
+- [ ] osaka-castle-dotonbori/20200128_114211.jpg — borrowed:20200128_113443.jpg (±7.5min)
+- [ ] osaka-castle-dotonbori/20200128_121347.jpg — borrowed:20200128_122045.jpg (±7.0min)
+- [ ] osaka-castle-dotonbori/20200128_122208.jpg — borrowed:20200128_122045.jpg (±1.4min)
+<!-- GPS_TODO:END -->
