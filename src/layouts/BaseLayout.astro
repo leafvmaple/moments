@@ -13,7 +13,7 @@ interface Props {
 }
 
 const { title, description, pageTitle, ogImage, ogType = 'website' } = Astro.props;
-const siteName = 'Moments · 叶枫影';
+const siteName = '叶枫影·听枫阁';
 const fullTitle = title ? `${title} — ${siteName}` : siteName;
 const desc = description ?? '生活的片段。照片、音乐与随笔。';
 const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString();
@@ -30,7 +30,6 @@ const ogImageUrl = ogImage
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={desc} />
     <link rel="canonical" href={canonical} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <link rel="alternate" type="application/rss+xml" title={siteName} href="/rss.xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />

@@ -271,7 +271,7 @@ const featuredItems = renderList(featured, 'featured');
     background: var(--color-bg-subtle);
   }
 
-  .quick-pane {
+  .quick-pane:not([hidden]) {
     display: flex;
     flex-direction: column;
   }

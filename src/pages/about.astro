@@ -12,11 +12,11 @@ const timeline = [
   <section class="about-card panel">
     <header class="about-header">
       <div class="avatar">
-        <span>叶</span>
+        <img src="/images/avatar.jpg" alt="叶枫影" />
       </div>
       <div>
-        <h1>leafvmaple</h1>
-        <p class="tagline">在代码缝隙里记录生活。</p>
+        <h1>叶枫影</h1>
+        <p class="tagline">闲记</p>
         <div class="links">
           <a href="https://leafvmaple.com" target="_blank" rel="noopener noreferrer">
             <Icon name="link" size={13} /> <span>leafvmaple.com</span>
@@ -29,26 +29,15 @@ const timeline = [
     </header>
 
     <section class="about-section">
-      <h2>关于这里</h2>
-      <p>
-        <strong>moments</strong> 是 <a href="https://leafvmaple.com">leafvmaple.com</a>
-        之外的另一面 —— 那边写代码、谈技术；这里写照片、音乐、读后感，以及生活里值得记下的零碎。
-      </p>
-      <p>
-        界面风格来自我多年前用过的 Typecho <em>handsome</em> 主题。
-        框架换成了 Astro，编译成纯静态 HTML，部署到 GitHub Pages。
-      </p>
+      <h2>关于网站</h2>
+      <p>一个记录自己生活和感悟的小阁楼。</p>
     </section>
 
     <section class="about-section">
       <h2>关于我</h2>
-      <p>
-        写代码为生。喜欢摄影、听老歌、看长篇小说。觉得"把当下记下来"这件事本身就有意义，
-        哪怕日后翻起来发现写得很笨。
-      </p>
-      <p class="placeholder-note">
-        （这里之后再慢慢补 —— 喜欢的乐队、读过的书、想去的地方……）
-      </p>
+      <p>坐标广东，某 MMORPG 客户端程序经理，同时也是剑网 3 枫影插件集作者。</p>
+      <p>半个二次元，爱好摄影。</p>
+      <p>主要技术栈：算法与数据结构、C++、Lua。</p>
     </section>
 
     <section class="about-section">
@@ -104,14 +93,16 @@ const timeline = [
     width: 80px;
     height: 80px;
     border-radius: 50%;
+    overflow: hidden;
     background: linear-gradient(135deg, var(--color-primary), var(--color-accent-green));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 32px;
-    font-weight: 300;
     flex-shrink: 0;
+  }
+
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
   .links {

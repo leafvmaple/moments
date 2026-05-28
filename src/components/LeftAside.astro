@@ -15,18 +15,18 @@ const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
 
 <aside class="app-aside">
   <a href="/" class="brand">
-    <span class="brand-mark">M</span>
-    <span class="brand-text">moments</span>
+    <Icon name="home" size={18} />
+    <span class="brand-text">听枫阁</span>
   </a>
 
   <div class="profile">
     <div class="avatar">
-      <span>叶</span>
+      <img src="/images/avatar.jpg" alt="叶枫影" />
     </div>
     <div class="profile-name">
-      leafvmaple <Icon name="chevronDown" size={12} />
+      叶枫影 <Icon name="chevronDown" size={12} />
     </div>
-    <div class="profile-bio">在代码缝隙里记录生活</div>
+    <div class="profile-bio">闲记</div>
   </div>
 
   <nav class="nav">
@@ -73,19 +73,6 @@ const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
     font-size: 16px;
   }
 
-  .brand-mark {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    background: var(--color-primary);
-    color: #fff;
-    font-weight: 600;
-    font-size: 14px;
-  }
-
   .brand-text {
     font-weight: 600;
     letter-spacing: 0.5px;
@@ -101,14 +88,16 @@ const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
     width: 96px;
     height: 96px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-accent-green));
+    overflow: hidden;
     margin: 0 auto var(--space-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 38px;
-    font-weight: 300;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent-green));
+  }
+
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
   .profile-name {
