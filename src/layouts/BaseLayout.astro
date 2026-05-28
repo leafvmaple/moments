@@ -8,12 +8,18 @@ interface Props {
   title?: string;
   description?: string;
   pageTitle?: string;
+  ogImage?: string;
+  ogType?: 'website' | 'article';
 }
 
-const { title, description, pageTitle } = Astro.props;
+const { title, description, pageTitle, ogImage, ogType = 'website' } = Astro.props;
 const siteName = 'Moments · 叶枫影';
 const fullTitle = title ? `${title} — ${siteName}` : siteName;
 const desc = description ?? '生活的片段。照片、音乐与随笔。';
+const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString();
+const ogImageUrl = ogImage
+  ? new URL(ogImage, Astro.site ?? Astro.url).toString()
+  : undefined;
 ---
 
 <!doctype html>
@@ -23,14 +29,30 @@ const desc = description ?? '生活的片段。照片、音乐与随笔。';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={desc} />
+    <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
+    <link rel="alternate" type="application/rss+xml" title={siteName} href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700&display=swap"
       rel="stylesheet"
     />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:url" content={canonical} />
+    {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+
+    <meta name="twitter:card" content={ogImageUrl ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={desc} />
+    {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
+
     <title>{fullTitle}</title>
     <script is:inline>
       (() => {

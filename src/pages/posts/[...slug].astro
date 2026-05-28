@@ -21,7 +21,13 @@ const { Content } = await render(post);
 const formattedDate = `${post.data.date.getFullYear()} 年 ${String(post.data.date.getMonth() + 1).padStart(2, '0')} 月 ${String(post.data.date.getDate()).padStart(2, '0')} 日`;
 ---
 
-<BaseLayout title={post.data.title} description={post.data.excerpt} pageTitle={post.data.title}>
+<BaseLayout
+  title={post.data.title}
+  description={post.data.excerpt}
+  pageTitle={post.data.title}
+  ogImage={post.data.cover}
+  ogType="article"
+>
   <div class="content-grid">
     <div class="content-main">
       <article class="post">
