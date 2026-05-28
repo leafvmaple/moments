@@ -50,7 +50,7 @@ const formattedDate = `${post.data.date.getFullYear()} 年 ${String(post.data.da
         </div>
       </div>
     </article>
-    <Sidebar />
+    <Sidebar excludeSlug={post.id} />
   </div>
 </BaseLayout>
 

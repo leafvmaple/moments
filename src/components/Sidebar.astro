@@ -2,8 +2,15 @@
 import { getCollection } from 'astro:content';
 import Icon from './Icon.astro';
 
+interface Props {
+  excludeSlug?: string;
+}
+
+const { excludeSlug } = Astro.props;
+
 const allPosts = await getCollection('posts');
-const sorted = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const visible = excludeSlug ? allPosts.filter((p) => p.id !== excludeSlug) : allPosts;
+const sorted = [...visible].sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
 const postCount = allPosts.length;
 const commentCount = 0;
@@ -31,45 +38,108 @@ const tags = Array.from(tagCounts.entries())
   .sort((a, b) => b.count - a.count);
 
 const recentPosts = sorted.slice(0, 3);
+const featured = [...visible]
+  .sort((a, b) => b.data.tags.length - a.data.tags.length || b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+const randomPool = visible.map((p) => ({
+  slug: p.id,
+  title: p.data.title,
+  cover: p.data.cover,
+}));
+const randomPoolJson = JSON.stringify(randomPool);
+
+const renderList = (
+  posts: typeof recentPosts,
+  variant: 'recent' | 'featured'
+) => posts.map((p) => ({
+  href: `/posts/${p.id}`,
+  title: p.data.title,
+  cover: p.data.cover,
+  meta:
+    variant === 'featured'
+      ? `${p.data.tags.length} 个标签`
+      : '0',
+  variant,
+}));
+
+const recentItems = renderList(recentPosts, 'recent');
+const featuredItems = renderList(featured, 'featured');
 ---
 
 <aside class="content-sidebar">
-  <section class="panel quick-tabs">
-    <button class="quick-tab" type="button" aria-label="点赞">
-      <Icon name="heart" size={16} />
-    </button>
-    <button class="quick-tab active" type="button" aria-label="评论">
-      <Icon name="messageCircle" size={16} />
-    </button>
-    <button class="quick-tab" type="button" aria-label="赞赏">
-      <Icon name="gift" size={16} />
-    </button>
-  </section>
+  <section class="panel quick-panel">
+    <div class="quick-tabs" role="tablist">
+      <button class="quick-tab" type="button" data-tab="featured" role="tab" aria-label="推荐">
+        <Icon name="heart" size={16} />
+      </button>
+      <button class="quick-tab active" type="button" data-tab="recent" role="tab" aria-label="最近">
+        <Icon name="messageCircle" size={16} />
+      </button>
+      <button class="quick-tab" type="button" data-tab="random" role="tab" aria-label="随机">
+        <Icon name="gift" size={16} />
+      </button>
+    </div>
 
-  {
-    recentPosts.length > 0 && (
-      <section class="panel recent-list">
-        {recentPosts.map((p) => (
-          <a class="recent-row" href={`/posts/${p.id}`}>
-            {p.data.cover ? (
-              <img class="recent-thumb" src={p.data.cover} alt={p.data.title} loading="lazy" />
-            ) : (
-              <div class="recent-thumb recent-thumb-placeholder">
-                <Icon name="fileText" size={16} />
-              </div>
-            )}
-            <div class="recent-text">
-              <span class="recent-title">{p.data.title}</span>
-              <span class="recent-meta">
-                <Icon name="messageCircle" size={11} />
-                <span>0</span>
-              </span>
-            </div>
-          </a>
-        ))}
-      </section>
-    )
-  }
+    <div class="quick-panes">
+      <div class="quick-pane" data-pane="featured" hidden>
+        {
+          featuredItems.length === 0 ? (
+            <div class="quick-empty">暂无内容</div>
+          ) : (
+            featuredItems.map((it) => (
+              <a class="recent-row" href={it.href}>
+                {it.cover ? (
+                  <img class="recent-thumb" src={it.cover} alt={it.title} loading="lazy" />
+                ) : (
+                  <div class="recent-thumb recent-thumb-placeholder">
+                    <Icon name="fileText" size={16} />
+                  </div>
+                )}
+                <div class="recent-text">
+                  <span class="recent-title">{it.title}</span>
+                  <span class="recent-meta">
+                    <Icon name="heart" size={11} />
+                    <span>{it.meta}</span>
+                  </span>
+                </div>
+              </a>
+            ))
+          )
+        }
+      </div>
+
+      <div class="quick-pane" data-pane="recent">
+        {
+          recentItems.length === 0 ? (
+            <div class="quick-empty">还没有文章</div>
+          ) : (
+            recentItems.map((it) => (
+              <a class="recent-row" href={it.href}>
+                {it.cover ? (
+                  <img class="recent-thumb" src={it.cover} alt={it.title} loading="lazy" />
+                ) : (
+                  <div class="recent-thumb recent-thumb-placeholder">
+                    <Icon name="fileText" size={16} />
+                  </div>
+                )}
+                <div class="recent-text">
+                  <span class="recent-title">{it.title}</span>
+                  <span class="recent-meta">
+                    <Icon name="messageCircle" size={11} />
+                    <span>{it.meta}</span>
+                  </span>
+                </div>
+              </a>
+            ))
+          )
+        }
+      </div>
+
+      <div class="quick-pane" data-pane="random" hidden>
+        <div class="quick-empty random-empty">加载中…</div>
+      </div>
+    </div>
+  </section>
 
   <section class="panel">
     <h4 class="panel-title">博客信息</h4>
@@ -113,12 +183,68 @@ const recentPosts = sorted.slice(0, 3);
   }
 </aside>
 
+<script is:inline define:vars={{ randomPoolJson }}>
+  (() => {
+    const tabs = document.querySelectorAll('.quick-tab');
+    const panes = document.querySelectorAll('.quick-pane');
+    if (!tabs.length) return;
+    tabs.forEach((t) => {
+      t.addEventListener('click', () => {
+        const key = t.dataset.tab;
+        tabs.forEach((x) => x.classList.toggle('active', x === t));
+        panes.forEach((p) => {
+          p.hidden = p.dataset.pane !== key;
+        });
+        if (key === 'random') renderRandom();
+      });
+    });
+
+    function escape(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      }[c]));
+    }
+    function renderRandom() {
+      const pane = document.querySelector('[data-pane="random"]');
+      if (!pane) return;
+      const pool = JSON.parse(randomPoolJson);
+      if (!pool.length) {
+        pane.innerHTML = '<div class="quick-empty">暂无文章</div>';
+        return;
+      }
+      const shuffled = pool.slice().sort(() => Math.random() - 0.5).slice(0, 3);
+      pane.innerHTML = shuffled
+        .map((p) => `
+        <a class="recent-row" href="/posts/${p.slug}">
+          ${p.cover
+            ? `<img class="recent-thumb" src="${escape(p.cover)}" alt="${escape(p.title)}" loading="lazy" />`
+            : '<div class="recent-thumb recent-thumb-placeholder"></div>'}
+          <div class="recent-text">
+            <span class="recent-title">${escape(p.title)}</span>
+            <span class="recent-meta">来一篇看看 →</span>
+          </div>
+        </a>`)
+        .join('');
+    }
+  })();
+</script>
+
 <style>
+  .quick-panel {
+    padding: 0;
+    overflow: hidden;
+  }
+
   .quick-tabs {
     display: flex;
     align-items: center;
     justify-content: space-around;
     padding: var(--space-sm);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .quick-tab {
@@ -145,9 +271,9 @@ const recentPosts = sorted.slice(0, 3);
     background: var(--color-bg-subtle);
   }
 
-  .recent-list {
-    padding: 0;
-    overflow: hidden;
+  .quick-pane {
+    display: flex;
+    flex-direction: column;
   }
 
   .recent-row {
@@ -204,6 +330,13 @@ const recentPosts = sorted.slice(0, 3);
     gap: 4px;
     color: var(--color-text-muted);
     font-size: 11px;
+  }
+
+  .quick-empty {
+    padding: var(--space-lg);
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 12px;
   }
 
   .stat-rows {
