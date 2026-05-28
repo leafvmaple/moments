@@ -297,8 +297,10 @@ hr {
 }
 
 .markdown-body img {
+  display: block;
+  max-height: 75vh;
+  margin: var(--space-md) auto;
   border-radius: var(--radius-card);
-  margin: var(--space-md) 0;
 }
 
 .markdown-body ul,
