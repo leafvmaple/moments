@@ -193,6 +193,23 @@ JPEG 的 EXIF GPS + 文件名时间戳，输出 `src/data/photo-meta/<slug>.json
 **借用窗口 >10min 的要扫一眼**确认 borrowed 那张确实在同一片区域（同神社、同街区）。
 如果借错了（比如下午在另一区拍），可以手动把那一条从 JSON 里删掉，map 上不显示即可。
 
+**手动覆盖**：如果想给某张图标一个更准的坐标（看图能认出地标），直接编辑
+`src/data/photo-meta/<slug>.json` 那一条，把 lat/lng 改对，并加 `"manual": true`：
+
+```json
+{
+  "file": "20200128_151820.jpg",
+  ...
+  "lat": 34.67,
+  "lng": 135.5012,
+  "gpsSource": "manual: UNIQLO 心斎橋店附近",
+  "manual": true
+}
+```
+
+带 `manual: true` 的条目在下次跑脚本时会被原样保留，不会被 EXIF/extracted/borrowed
+任何一档覆盖。审计块里会单独列出 "manual (preserved): N"。
+
 - 完全没 GPS 数据的 slug 不需要跑脚本；JSON 不存在地图就不显示
 - 多张同坐标的照片会自动合并成一个 marker，弹窗里横向排照片缩略图
 

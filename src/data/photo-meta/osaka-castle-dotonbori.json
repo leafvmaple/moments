@@ -120,9 +120,10 @@
     "file": "20200128_151820.jpg",
     "src": "/images/osaka-castle-dotonbori/20200128_151820.jpg",
     "time": "2020-01-28T15:18:20",
-    "lat": 34.66634,
-    "lng": 135.503405,
-    "gpsSource": "borrowed:20200128_143213.jpg (±46.1min)"
+    "lat": 34.67,
+    "lng": 135.5012,
+    "gpsSource": "manual: UNIQLO 心斎橋店附近 (心斎橋筋南端, identified from photo signage)",
+    "manual": true
   },
   {
     "file": "20200128_195900.jpg",

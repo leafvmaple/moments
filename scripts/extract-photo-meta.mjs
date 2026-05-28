@@ -16,7 +16,7 @@
 //      tight enough that travel typically stays in one district.
 //   4. Skip with warning — no usable coordinates anywhere.
 
-import { readdir, mkdir, writeFile } from 'node:fs/promises';
+import { readdir, mkdir, writeFile, readFile } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 import { existsSync } from 'node:fs';
 import exifr from 'exifr';
@@ -64,6 +64,22 @@ async function rescueFromExtracted(date, hhmmss) {
     if (gps) return { ...gps, source: `extracted/${name}` };
   }
   return null;
+}
+
+// If the output JSON already exists, preserve entries flagged
+// `manual: true` so a hand-supplemented coordinate survives re-runs.
+const outDir = 'src/data/photo-meta';
+const outPath = join(outDir, `${slug}.json`);
+const manualOverrides = new Map();
+if (existsSync(outPath)) {
+  try {
+    const prev = JSON.parse(await readFile(outPath, 'utf8'));
+    for (const e of prev) {
+      if (e && e.manual === true && e.file && e.lat != null && e.lng != null) {
+        manualOverrides.set(e.file, e);
+      }
+    }
+  } catch {}
 }
 
 const files = (await readdir(imageDir))
@@ -119,14 +135,30 @@ for (const r of records) {
 const entries = [];
 const fallbackRecovered = [];
 const peerBorrowed = [];
+const manualKept = [];
 const skipped = [];
 
 for (const r of records) {
+  const override = manualOverrides.get(r.file);
+  const publicPath = '/' + relative('public', r.abs).split(sep).join('/');
+  if (override) {
+    // Manual override wins regardless of what the source/fallback found.
+    entries.push({
+      file: r.file,
+      src: publicPath,
+      time: r.time,
+      lat: override.lat,
+      lng: override.lng,
+      gpsSource: override.gpsSource ?? 'manual',
+      manual: true,
+    });
+    manualKept.push(r.file);
+    continue;
+  }
   if (!r.gps) {
     skipped.push(r.file);
     continue;
   }
-  const publicPath = '/' + relative('public', r.abs).split(sep).join('/');
   const entry = {
     file: r.file,
     src: publicPath,
@@ -145,17 +177,17 @@ for (const r of records) {
 
 entries.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
 
-const outDir = 'src/data/photo-meta';
 await mkdir(outDir, { recursive: true });
-const outPath = join(outDir, `${slug}.json`);
 await writeFile(outPath, JSON.stringify(entries, null, 2) + '\n');
 
 // Summary log — surface everything that didn't come from the photo's
 // own EXIF so the user can decide whether to supplement manually.
 console.log('');
 console.log(`=== GPS audit for ${slug} ===`);
-const selfCount = entries.length - fallbackRecovered.length - peerBorrowed.length;
+const selfCount = entries.length - fallbackRecovered.length - peerBorrowed.length - manualKept.length;
 console.log(`  self EXIF:                ${selfCount}`);
+console.log(`  manual (preserved):       ${manualKept.length}`);
+for (const f of manualKept) console.log(`    ${f}`);
 console.log(`  rescued from extracted/:  ${fallbackRecovered.length}`);
 for (const r of fallbackRecovered) console.log(`    ${r.file} <- ${r.source}`);
 console.log(`  borrowed from peer:       ${peerBorrowed.length}`);
