@@ -1,0 +1,181 @@
+---
+import { getCollection } from 'astro:content';
+import Icon from './Icon.astro';
+
+const posts = (await getCollection('posts')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+const recent = posts.slice(0, 6).map((p) => ({
+  slug: p.id,
+  title: p.data.title,
+  date: p.data.date,
+}));
+---
+
+<div class="clock-wrap">
+  <button class="clock-btn" type="button" aria-label="近期发布" data-clock-trigger>
+    <Icon name="clock" size={14} />
+  </button>
+  <div class="clock-dropdown" hidden data-clock-panel>
+    <div class="clock-head">
+      <Icon name="clock" size={12} />
+      <span>近期发布</span>
+    </div>
+    {
+      recent.length === 0 ? (
+        <div class="clock-empty">还没有文章</div>
+      ) : (
+        <ol class="clock-list">
+          {recent.map((p) => {
+            const y = p.date.getFullYear();
+            const m = String(p.date.getMonth() + 1).padStart(2, '0');
+            const d = String(p.date.getDate()).padStart(2, '0');
+            return (
+              <li>
+                <a href={`/posts/${p.slug}`}>
+                  <span class="clock-date">{y}-{m}-{d}</span>
+                  <span class="clock-title">{p.title}</span>
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+      )
+    }
+    <a class="clock-foot" href="/archive">查看全部归档 →</a>
+  </div>
+</div>
+
+<script is:inline>
+  (() => {
+    const btn = document.querySelector('[data-clock-trigger]');
+    const panel = document.querySelector('[data-clock-panel]');
+    if (!btn || !panel) return;
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      panel.hidden = !panel.hidden;
+    });
+    document.addEventListener('click', (e) => {
+      if (panel.hidden) return;
+      if (!panel.contains(e.target) && e.target !== btn) panel.hidden = true;
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !panel.hidden) panel.hidden = true;
+    });
+  })();
+</script>
+
+<style>
+  .clock-wrap {
+    position: relative;
+  }
+
+  .clock-btn {
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    color: var(--color-text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .clock-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  .clock-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 280px;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card-hover);
+    z-index: 50;
+    overflow: hidden;
+  }
+
+  .clock-dropdown[hidden] {
+    display: none;
+  }
+
+  .clock-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px var(--space-md);
+    color: var(--color-text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .clock-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+
+  .clock-list li + li {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .clock-list a {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px var(--space-md);
+    color: var(--color-text);
+  }
+
+  .clock-list a:hover {
+    background: var(--color-bg-subtle);
+    color: var(--color-primary);
+  }
+
+  .clock-date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--color-text-muted);
+  }
+
+  .clock-title {
+    font-size: 13px;
+    color: var(--color-heading);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .clock-list a:hover .clock-title {
+    color: var(--color-primary);
+  }
+
+  .clock-empty {
+    padding: var(--space-md);
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 12px;
+  }
+
+  .clock-foot {
+    display: block;
+    text-align: center;
+    padding: 8px var(--space-md);
+    font-size: 12px;
+    color: var(--color-primary);
+    background: var(--color-bg-subtle);
+    border-top: 1px solid var(--color-border);
+  }
+</style>

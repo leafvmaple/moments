@@ -1,0 +1,20 @@
+[
+  {
+    "title": "SoundHelix Song 1",
+    "artist": "T. Schürger",
+    "src": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    "cover": "https://picsum.photos/id/1062/80/80"
+  },
+  {
+    "title": "SoundHelix Song 2",
+    "artist": "T. Schürger",
+    "src": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    "cover": "https://picsum.photos/id/1024/80/80"
+  },
+  {
+    "title": "SoundHelix Song 3",
+    "artist": "T. Schürger",
+    "src": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+    "cover": "https://picsum.photos/id/1043/80/80"
+  }
+]
