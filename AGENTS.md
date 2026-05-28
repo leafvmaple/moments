@@ -56,7 +56,7 @@ PowerShell 上读 EXIF 用 `magick identify -format '%[EXIF:*]' file.jpg` 最快
 
 - ❌ **章节标题不要带时间戳**（不要写「## 12:08 走向渡月橋」）。「显得刻意」。
 - ❌ **图片文件名不要用序号**（不要 `01-station.jpg`、`02-bridge.jpg`）。
-  用 EXIF 时间戳 `HHMMSS.jpg`，将来用户新增照片塞进任意位置都不用改其他文件名。
+  用 EXIF 时间戳 `YYYYMMDD_HHMMSS.jpg`（例：`20200129_145240.jpg`），将来用户新增照片塞进任意位置都不用改其他文件名。带年份是为了跨多日行程或长期博客积累时仍能在同一目录区分。
 - ❌ **正文不要用 H1**（`#`）。Astro 主题把 frontmatter 的 `title` 自动渲染为页面
   H1；正文里再写 H1 会触发 lint + 影响 SEO + 视觉错乱。多段游记用「H2 大块 + H3 章节」
   结构（例：`## 上午 · 嵐山` 下面是 `### 阪急嵐山駅`、`### 中ノ島橋`……）。
@@ -72,7 +72,7 @@ PowerShell 上读 EXIF 用 `magick identify -format '%[EXIF:*]' file.jpg` 最快
 
 ```
 src/content/posts/<slug>.md           ← Markdown 正文
-public/images/<slug>/HHMMSS.jpg       ← 处理后的图，按时间戳命名
+public/images/<slug>/YYYYMMDD_HHMMSS.jpg  ← 处理后的图，按 EXIF 时间戳命名
 photos/<slug>/extracted/IMG_xxx.jpg   ← 原图（不进 git？看用户偏好）
 ```
 
@@ -84,41 +84,87 @@ title: <标题>
 date: YYYY-MM-DD          # 用 EXIF 日期，不是写作日期
 tags: [旅行, <城市>, <国家>]
 excerpt: <80-120字钩子，能独立成段>
-cover: /images/<slug>/<HHMMSS>.jpg
+cover: /images/<slug>/<YYYYMMDD_HHMMSS>.jpg
 ---
 ```
 
-### 7. 色彩归一化（**必跑**）
+### 7. 压缩（**必跑**）
 
-不同照片往往「有的修过、有的没修、有的色温飘」，直接发会很跳。跑：
+照片原图通常 3–5MB，直接进 git/部署会拖慢加载。跑：
 
 ```powershell
-./scripts/normalize-photos.ps1 -Path public/images/<slug>
+./scripts/compress-photos.ps1 -Path public/images/<slug>
 ```
 
-脚本会**自适应**——测每张图的当前饱和度（S）和亮度（L），按比例往目标值（S=35、L=53）拉，
-极端发灰的会被强力救回（饱和度倍率上限 2.6），正常的几乎不动。
-跑完表格里看 `OutS` 应该都收敛到 30–45 区间。
+只做一件事：用 ImageMagick 以 `-quality 88` 重编码每张 JPEG，体积通常砍到 50–70%，
+肉眼基本看不出差别。**不做色彩 / 饱和度调整** —— 滤镜由用户在外部工具（Snapseed、
+Lightroom 等）里自己处理后，把成品放到 `photos/<slug>/`，脚本只负责出包压缩。
 
-**当前管线（已验证）：**
+参数细节看 `scripts/compress-photos.ps1` 文件头。
 
-```text
-[条件] SatMul > 1.3：先在 LAB 空间对 a/b 通道做高斯模糊（去 chroma 噪声）
-auto-level             # sRGB 上做即可，简单管线
-modulate $bri,$sat,100
-quality 88
+> 历史脚本 `scripts/normalize-photos.ps1` 还在仓库里 —— 它会做自适应 saturation/contrast
+> normalize，但默认管线不再用它（用户偏好自己掌控滤镜）。如果某次需要让一组"有的修过、
+> 有的没修"的混源照片统一色调，可以临时用它。
+
+### 7.5 天空选择性调整（按需）
+
+`compress-photos.ps1` 不动色彩，所以会原样保留两类问题：
+
+- 相机原片把云天压平 → 天空发灰
+- 用户外部滤镜应用得过头 → 天空过蓝
+
+不一刀切 normalize 整组，是为了保留每张的原始意图。但同一组里如果天空饱和度落差太大，
+整篇读起来会"跳"。这一步是把异常值往中间拉，**整体差异保留**。
+
+**审计**：测每张图顶部 1/3 的 HSL 饱和度（即"天空区域"代理指标）：
+
+```powershell
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+$dir = "public/images/<slug>"
+$rows = @()
+foreach ($f in Get-ChildItem $dir -Filter "*.jpg") {
+    $skyS = [math]::Round([double](magick "$($f.FullName)" -gravity North -crop "100%x33%+0+0" +repage -colorspace HSL -format "%[fx:mean.g*100]" info:), 1)
+    $rows += [PSCustomObject]@{ File = $f.Name; SkyS = $skyS }
+}
+$rows | Sort-Object SkyS -Descending | Format-Table -AutoSize
 ```
 
-**为什么不在 LAB-L 通道做 sigmoidal-contrast 加对比？** 试过——会偷偷把所有图的 a/b 通道
-色彩往两端推，相当于又叠一层饱和度，导致 OutS 普遍偏高、目标失准；而且对 SatMul > 2 的极端
-图会把不可见的 JPEG chroma 噪声推到看得见，天空里会出紫青色斑。**保持管线最简**比加聪明的
-预处理更靠谱。
+**SkyS 判读经验值**（顶部 1/3 平均饱和度，0-100）：
 
-**chroma blur 是关键保护**：饱和度被强力放大时（SatMul > 1.3），相机原本压平的低色彩区
-（阴云、白墙）会暴露出 JPEG 块状色噪。脚本在 LAB 的 a/b 通道做高斯模糊（半径 = SatMul × 2.5），
-只模糊色彩、不模糊亮度，所以边缘和细节完全保留。
+| 区间 | 判读 | 处理 |
+|------|------|------|
+| 70+ | 通常过蓝 | 拉 0.85 一次；如 >75 再叠 0.9 一次直到 ~67 |
+| 60–67 | 自然清天蓝带（**目标区间**） | 不动 |
+| 40–60 | 阴天 / 部分天 / 多云 | 不动 |
+| <40 | 看场景 | 站台屋顶 / 林荫 / 隧道 / 夕阳云压顶是结构性低，**不动**；明显有大片天但 SkyS<40 多半是相机压平，可拉 1.15–1.2 一次 |
 
-参数细节看 `scripts/normalize-photos.ps1` 文件头。
+> **没有"用户滤镜白名单"**：哪怕文件名带 `-EDIT`（用户外部 P 过）也照样按 SkyS 处理。
+> 用户的滤镜意图通过**绝对值**保留 —— 比如他 P 到 SkyS=87，按规则拉 0.85 仍是 74，
+> 仍比自然蓝组（60-67）高一截，他的"重彩"意图自动落在最高档。不要根据文件名做特殊豁免。
+
+**拉下来**（过蓝）：
+
+```powershell
+magick "$path" -modulate 100,85,100 -quality 88 "$path"   # 温和一档
+magick "$path" -modulate 100,90,100 -quality 88 "$path"   # 顽固高值再叠
+```
+
+**拉上去**（过淡）：
+
+```powershell
+magick "$path" -modulate 100,115,100 -quality 88 "$path"  # 谨慎
+magick "$path" -modulate 100,120,100 -quality 88 "$path"  # 1.2x 已是上限
+```
+
+**注意**：`-modulate` 是全图饱和度，不只动天 —— 拉上去时，本殿红 / 千本鸟居橙 / 鲜艳和服
+这种已饱和的颜色会被推过头。所以上调比下调更克制；超过 1.2x 之前一定先看图。
+
+**做完再测一次**，确认整组 SkyS 分布是一条平顺的下降曲线 —— 中间不要有 20+ 的断层。
+最高那张可能依然偏高（如果用户原图就极饱和，拉一两次后仍在 70+ 区间），这是规则正确执行
+的结果，不要再额外往下拉去强行追求一致。
+
+> 这一节是**按需**：如果用户对 compress 后的整组观感就已经满意，跳过即可。但如果做了，
+> 一定要在 commit message 里写明 "selective sky touch-up" + 调了哪几张，未来回查能复现。
 
 ### 8. 发布
 
@@ -172,7 +218,7 @@ gh run list --limit 3 --workflow=deploy.yml
 | 强力 saturation boost 直接做 | 阴云区域 JPEG chroma 噪声被推出紫青斑 | SatMul>1.3 时先在 LAB a/b 做高斯模糊 |
 | 调一张图时只 reset 那一张就重跑脚本 | 目录里其他图被**二次处理**，饱和度叠乘 | reset **整个目录**再跑，脚本是全目录 in-place |
 | 章节标题加时间戳 | 用户嫌「刻意」 | 时间感通过叙述自然带出 |
-| 图片用序号命名 | 加一张新图就要重排所有名字 | 用 EXIF HHMMSS |
+| 图片用序号命名 | 加一张新图就要重排所有名字 | 用 EXIF `YYYYMMDD_HHMMSS` |
 | 没和用户对行程就动笔 | 写出来像看图说话 | 第 3 步表格必须先确认 |
 | 直接给一稿不给选项 | 文风没踩中 | 第 4 步必须先给样段 A/B |
 | frontmatter `date` 写成今天 | 列表页时间错乱 | 用 EXIF 日期（或游后几天，制造「即时随笔」感） |
