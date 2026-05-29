@@ -73,8 +73,8 @@
 - [ ] kyoto-winter/20200129_145240.jpg — borrowed:20200129_145110.jpg (±1.5min)
 - [ ] kyoto-winter/20200129_145428.jpg — borrowed:20200129_145110.jpg (±3.3min)
 - [ ] kyoto-winter/20200129_152834.jpg — borrowed:20200129_153238.jpg (±4.1min)
-- [ ] osaka-winter/20200128_110029.jpg — borrowed:20200128_105946.jpg (±0.7min)
-- [ ] osaka-winter/20200128_114211.jpg — borrowed:20200128_113443.jpg (±7.5min)
-- [ ] osaka-winter/20200128_121347.jpg — borrowed:20200128_122045.jpg (±7.0min)
-- [ ] osaka-winter/20200128_122208.jpg — borrowed:20200128_122045.jpg (±1.4min)
+- [ ] osaka/20200128_110029.jpg — borrowed:20200128_105946.jpg (±0.7min)
+- [ ] osaka/20200128_114211.jpg — borrowed:20200128_113443.jpg (±7.5min)
+- [ ] osaka/20200128_121347.jpg — borrowed:20200128_122045.jpg (±7.0min)
+- [ ] osaka/20200128_122208.jpg — borrowed:20200128_122045.jpg (±1.4min)
 <!-- GPS_TODO:END -->
