@@ -25,3 +25,7 @@ pnpm-debug.log*
 
 # raw photo originals + zip archives (kept locally as backup; processed copies live in public/images/)
 photos/
+
+# claude code: share the project-level allowlist, ignore everything else (transcripts, caches, etc.)
+.claude/*
+!.claude/settings.json

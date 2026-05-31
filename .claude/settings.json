@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ' *)",
+      "Bash(node scripts/extract-photo-meta.mjs tokyo-2015 tokyo-2015)",
+      "Bash(node scripts/extract-photo-meta.mjs tokyo-2015 public/images/tokyo-2015)"
+    ]
+  }
+}
