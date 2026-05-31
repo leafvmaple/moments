@@ -1,0 +1,178 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Sidebar from '../../components/Sidebar.astro';
+import Icon from '../../components/Icon.astro';
+
+const trips = (await getCollection('trips')).sort(
+  (a, b) => b.data.startDate.valueOf() - a.data.startDate.valueOf()
+);
+const posts = await getCollection('posts');
+const postsByTrip = new Map<string, number>();
+for (const p of posts) {
+  if (!p.data.trip) continue;
+  postsByTrip.set(p.data.trip, (postsByTrip.get(p.data.trip) ?? 0) + 1);
+}
+
+const fmt = (d: Date) =>
+  `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+---
+
+<BaseLayout title="行程" description="按行程组织的旅行记录。" pageTitle="行程">
+  <div class="content-grid">
+    <section class="content-main">
+      <header class="page-header panel">
+        <h1>行程 · Trips</h1>
+        <p>把多日多地的旅行装进一个时间盒子。</p>
+      </header>
+
+      {
+        trips.length === 0 ? (
+          <div class="panel empty">
+            <p>暂无行程。在 <code>src/content/trips/</code> 添加 Markdown 即可。</p>
+          </div>
+        ) : (
+          <div class="trip-grid">
+            {trips.map((t) => (
+              <a class="trip-card" href={`/trips/${t.id}`} data-has-cover={t.data.cover ? 'true' : 'false'}>
+                {t.data.cover && <img class="trip-card-cover" src={t.data.cover} alt={t.data.name} loading="lazy" />}
+                <div class="trip-card-overlay">
+                  <h2 class="trip-card-title">{t.data.name}</h2>
+                  {t.data.excerpt && <p class="trip-card-excerpt">{t.data.excerpt}</p>}
+                  <div class="trip-card-meta">
+                    <span class="meta-item">
+                      <Icon name="calendar" size={12} />
+                      <span>{fmt(t.data.startDate)} – {fmt(t.data.endDate)}</span>
+                    </span>
+                    <span class="meta-item">
+                      <Icon name="fileText" size={12} />
+                      <span>{postsByTrip.get(t.id) ?? 0} 篇</span>
+                    </span>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        )
+      }
+    </section>
+    <Sidebar />
+  </div>
+</BaseLayout>
+
+<style>
+  .page-header {
+    margin-bottom: var(--space-md);
+  }
+
+  .page-header h1 {
+    margin: 0 0 var(--space-sm);
+    font-weight: 300;
+    font-size: 24px;
+  }
+
+  .page-header p {
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
+  .empty {
+    text-align: center;
+    color: var(--color-text-muted);
+  }
+
+  .trip-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .trip-card {
+    position: relative;
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    background: var(--color-bg-card);
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    color: inherit;
+    transition: box-shadow 0.2s ease;
+  }
+
+  .trip-card[data-has-cover='false'] {
+    min-height: auto;
+    padding: var(--space-xl);
+  }
+
+  .trip-card:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .trip-card-cover {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+  }
+
+  .trip-card[data-has-cover='true'] .trip-card-overlay {
+    position: relative;
+    z-index: 1;
+    padding: var(--space-xl);
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.55) 55%,
+      rgba(0, 0, 0, 0.85) 100%
+    );
+    color: #ececec;
+  }
+
+  .trip-card[data-has-cover='true'] .trip-card-title {
+    color: #fff;
+  }
+
+  .trip-card[data-has-cover='true'] .trip-card-excerpt {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .trip-card[data-has-cover='true'] .trip-card-meta {
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .trip-card-title {
+    font-size: 22px;
+    margin: 0 0 var(--space-sm);
+    font-weight: 400;
+    transition: color 0.15s ease;
+  }
+
+  .trip-card:hover .trip-card-title {
+    color: var(--color-primary);
+  }
+
+  .trip-card-excerpt {
+    font-size: 14px;
+    margin: 0 0 var(--space-md);
+    line-height: 1.65;
+  }
+
+  .trip-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-md);
+    font-size: 12px;
+    color: var(--color-text-muted);
+  }
+
+  .meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+</style>

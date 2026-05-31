@@ -1,0 +1,246 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Sidebar from '../../components/Sidebar.astro';
+import Icon from '../../components/Icon.astro';
+
+export async function getStaticPaths() {
+  const trips = await getCollection('trips');
+  const posts = await getCollection('posts');
+  return trips.map((trip) => ({
+    params: { slug: trip.id },
+    props: {
+      trip,
+      posts: posts
+        .filter((p) => p.data.trip === trip.id)
+        .sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf()),
+    },
+  }));
+}
+
+type Trip = Awaited<ReturnType<typeof getCollection<'trips'>>>[number];
+type Post = Awaited<ReturnType<typeof getCollection<'posts'>>>[number];
+
+const { trip, posts } = Astro.props as { trip: Trip; posts: Post[] };
+const { Content } = await render(trip);
+
+const fmt = (d: Date) =>
+  `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+const dateRange = `${fmt(trip.data.startDate)} – ${fmt(trip.data.endDate)}`;
+const dayCount =
+  Math.round(
+    (trip.data.endDate.getTime() - trip.data.startDate.getTime()) / 86400000
+  ) + 1;
+
+const fmtPostDate = (d: Date) =>
+  `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+---
+
+<BaseLayout
+  title={trip.data.name}
+  description={trip.data.excerpt}
+  pageTitle={trip.data.name}
+  ogImage={trip.data.cover}
+  ogType="article"
+>
+  <div class="content-grid">
+    <div class="content-main">
+      <article class="trip">
+        {trip.data.cover && <img src={trip.data.cover} alt={trip.data.name} class="trip-cover" />}
+        <div class="trip-body">
+          <h1 class="trip-title">{trip.data.name}</h1>
+          <div class="trip-meta">
+            <span class="meta-item">
+              <Icon name="calendar" size={13} />
+              <span>{dateRange}</span>
+            </span>
+            <span class="meta-item">
+              <Icon name="clock" size={13} />
+              <span>共 {dayCount} 天</span>
+            </span>
+            <span class="meta-item">
+              <Icon name="home" size={13} />
+              <span>{trip.data.country}</span>
+            </span>
+            <span class="meta-item">
+              <Icon name="fileText" size={13} />
+              <span>{posts.length} 篇日记</span>
+            </span>
+          </div>
+          {trip.data.excerpt && <p class="trip-excerpt">{trip.data.excerpt}</p>}
+          <div class="markdown-body">
+            <Content />
+          </div>
+
+          {
+            posts.length > 0 && (
+              <section class="trip-posts">
+                <h2 class="trip-posts-title">行程日记</h2>
+                <ol class="trip-post-list">
+                  {posts.map((p) => (
+                    <li class="trip-post-row">
+                      <a class="trip-post-link" href={`/posts/${p.id}`}>
+                        {p.data.cover ? (
+                          <img class="trip-post-thumb" src={p.data.cover} alt={p.data.title} loading="lazy" />
+                        ) : (
+                          <div class="trip-post-thumb trip-post-thumb-placeholder">
+                            <Icon name="fileText" size={20} />
+                          </div>
+                        )}
+                        <div class="trip-post-text">
+                          <span class="trip-post-date">{fmtPostDate(p.data.date)}</span>
+                          <span class="trip-post-title">{p.data.title}</span>
+                          {p.data.excerpt && <span class="trip-post-excerpt">{p.data.excerpt}</span>}
+                        </div>
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            )
+          }
+        </div>
+      </article>
+    </div>
+    <Sidebar />
+  </div>
+</BaseLayout>
+
+<style>
+  .trip {
+    background: var(--color-bg-card);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+  }
+
+  .trip-cover {
+    width: 100%;
+    aspect-ratio: 16 / 6;
+    object-fit: cover;
+  }
+
+  .trip-body {
+    padding: var(--space-xl);
+  }
+
+  .trip-title {
+    font-size: 26px;
+    margin-bottom: var(--space-md);
+    font-weight: 300;
+  }
+
+  .trip-meta {
+    color: var(--color-text-muted);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    padding-bottom: var(--space-md);
+    margin-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .trip-excerpt {
+    color: var(--color-text);
+    font-size: 15px;
+    line-height: 1.7;
+    margin: 0 0 var(--space-lg);
+  }
+
+  .trip-posts {
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .trip-posts-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 var(--space-md);
+    color: var(--color-heading);
+  }
+
+  .trip-post-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .trip-post-link {
+    display: flex;
+    align-items: stretch;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--color-bg-subtle);
+    border-radius: var(--radius-card);
+    color: var(--color-text);
+    transition: background 0.15s ease;
+  }
+
+  .trip-post-link:hover {
+    background: var(--color-bg-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  .trip-post-thumb {
+    width: 80px;
+    height: 80px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .trip-post-thumb-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-card);
+    color: var(--color-text-muted);
+  }
+
+  .trip-post-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .trip-post-date {
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  .trip-post-title {
+    color: var(--color-heading);
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .trip-post-link:hover .trip-post-title {
+    color: var(--color-primary);
+  }
+
+  .trip-post-excerpt {
+    color: var(--color-text-muted);
+    font-size: 12px;
+    line-height: 1.55;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+</style>
