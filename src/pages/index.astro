@@ -3,10 +3,27 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Sidebar from '../components/Sidebar.astro';
 import PostCard from '../components/PostCard.astro';
+import Icon from '../components/Icon.astro';
 
-const posts = (await getCollection('posts')).sort(
-  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+const trips = (await getCollection('trips')).sort(
+  (a, b) => b.data.startDate.valueOf() - a.data.startDate.valueOf()
 );
+const posts = await getCollection('posts');
+const postsByTrip = new Map<string, number>();
+for (const p of posts) {
+  if (!p.data.trip) continue;
+  postsByTrip.set(p.data.trip, (postsByTrip.get(p.data.trip) ?? 0) + 1);
+}
+
+const standalonePosts = posts
+  .filter((p) => !p.data.trip)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const fmt = (d: Date) =>
+  `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+
+const recentTrips = trips.slice(0, 3);
+const hasMoreTrips = trips.length > recentTrips.length;
 ---
 
 <BaseLayout pageTitle="首页">
@@ -16,25 +33,66 @@ const posts = (await getCollection('posts')).sort(
         <h1>听枫阁</h1>
         <p>偶有所得，辄记之</p>
       </header>
-      {
-        posts.length === 0 ? (
-          <div class="panel empty">
-            <h2>还没有文章</h2>
-            <p>在 <code>src/content/posts/</code> 添加 Markdown 文件即可。</p>
-          </div>
-        ) : (
-          posts.map((p) => (
-            <PostCard
-              title={p.data.title}
-              date={p.data.date}
-              excerpt={p.data.excerpt}
-              tags={p.data.tags}
-              cover={p.data.cover}
-              href={`/posts/${p.id}`}
-            />
-          ))
-        )
-      }
+
+      <section class="home-section">
+        <header class="section-header">
+          <h2><Icon name="activity" size={14} /> 近期行程</h2>
+          {hasMoreTrips && <a class="section-more" href="/trips">查看全部 →</a>}
+        </header>
+        {
+          recentTrips.length === 0 ? (
+            <div class="panel empty">
+              <p>还没有行程。一次跨多日多地的旅行会被聚合成一条行程。</p>
+            </div>
+          ) : (
+            <div class="trip-strip">
+              {recentTrips.map((t) => (
+                <a class="trip-card" href={`/trips/${t.id}`} data-has-cover={t.data.cover ? 'true' : 'false'}>
+                  {t.data.cover && <img class="trip-card-cover" src={t.data.cover} alt={t.data.name} loading="lazy" />}
+                  <div class="trip-card-overlay">
+                    <h3 class="trip-card-title">{t.data.name}</h3>
+                    {t.data.excerpt && <p class="trip-card-excerpt">{t.data.excerpt}</p>}
+                    <div class="trip-card-meta">
+                      <span class="meta-item">
+                        <Icon name="calendar" size={11} />
+                        <span>{fmt(t.data.startDate)} – {fmt(t.data.endDate)}</span>
+                      </span>
+                      <span class="meta-item">
+                        <Icon name="fileText" size={11} />
+                        <span>{postsByTrip.get(t.id) ?? 0} 篇</span>
+                      </span>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )
+        }
+      </section>
+
+      <section class="home-section">
+        <header class="section-header">
+          <h2><Icon name="fileText" size={14} /> 随笔</h2>
+        </header>
+        {
+          standalonePosts.length === 0 ? (
+            <div class="panel empty">
+              <p>还没有随笔。日常感悟、不属于任何行程的文章会出现在这里。</p>
+            </div>
+          ) : (
+            standalonePosts.map((p) => (
+              <PostCard
+                title={p.data.title}
+                date={p.data.date}
+                excerpt={p.data.excerpt}
+                tags={p.data.tags}
+                cover={p.data.cover}
+                href={`/posts/${p.id}`}
+              />
+            ))
+          )
+        }
+      </section>
     </section>
     <Sidebar />
   </div>
@@ -53,12 +111,145 @@ const posts = (await getCollection('posts')).sort(
     margin: 0 0 var(--space-md);
   }
 
-  .empty {
-    text-align: center;
+  .home-section {
+    margin-bottom: var(--space-xl);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 0 var(--space-md);
+    padding: 0 var(--space-xs);
+  }
+
+  .section-header h2 {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    letter-spacing: 0.5px;
+  }
+
+  .section-header h2 :global(svg) {
+    color: var(--color-primary);
+  }
+
+  .section-more {
+    font-size: 12px;
     color: var(--color-text-muted);
   }
 
-  .empty h2 {
-    margin-bottom: var(--space-sm);
+  .section-more:hover {
+    color: var(--color-primary);
+  }
+
+  .empty {
+    text-align: center;
+    color: var(--color-text-muted);
+    padding: var(--space-lg);
+  }
+
+  .empty p {
+    margin: 0;
+    font-size: 13px;
+  }
+
+  .trip-strip {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .trip-card {
+    position: relative;
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    background: var(--color-bg-card);
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    color: inherit;
+    transition: box-shadow 0.2s ease;
+  }
+
+  .trip-card[data-has-cover='false'] {
+    min-height: auto;
+    padding: var(--space-lg);
+  }
+
+  .trip-card:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .trip-card-cover {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+  }
+
+  .trip-card[data-has-cover='true'] .trip-card-overlay {
+    position: relative;
+    z-index: 1;
+    padding: var(--space-xl);
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.55) 55%,
+      rgba(0, 0, 0, 0.85) 100%
+    );
+    color: #ececec;
+  }
+
+  .trip-card[data-has-cover='true'] .trip-card-title {
+    color: #fff;
+  }
+
+  .trip-card[data-has-cover='true'] .trip-card-excerpt {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .trip-card[data-has-cover='true'] .trip-card-meta {
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .trip-card-title {
+    font-size: 20px;
+    margin: 0 0 var(--space-sm);
+    font-weight: 400;
+    transition: color 0.15s ease;
+  }
+
+  .trip-card:hover .trip-card-title {
+    color: var(--color-primary);
+  }
+
+  .trip-card-excerpt {
+    font-size: 13px;
+    margin: 0 0 var(--space-sm);
+    line-height: 1.6;
+  }
+
+  .trip-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-md);
+    font-size: 11px;
+    color: var(--color-text-muted);
+  }
+
+  .meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
   }
 </style>
