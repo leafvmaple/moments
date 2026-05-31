@@ -6,6 +6,8 @@ import PostCard from '../../components/PostCard.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts');
+  const trips = await getCollection('trips');
+  const tripNameById = new Map(trips.map((t) => [t.id, t.data.name]));
   const tagMap = new Map<string, typeof posts>();
   for (const p of posts) {
     for (const t of p.data.tags) {
@@ -19,14 +21,15 @@ export async function getStaticPaths() {
     props: {
       tag,
       posts: taggedPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf()),
+      tripNames: Object.fromEntries(tripNameById),
     },
   }));
 }
 
 type Post = Awaited<ReturnType<typeof getCollection<'posts'>>>[number];
-type Props = { tag: string; posts: Post[] };
+type Props = { tag: string; posts: Post[]; tripNames: Record<string, string> };
 
-const { tag, posts } = Astro.props as Props;
+const { tag, posts, tripNames } = Astro.props as Props;
 ---
 
 <BaseLayout title={`#${tag}`} description={`标签 ${tag} 下的文章。`} pageTitle={`#${tag}`}>
@@ -45,6 +48,8 @@ const { tag, posts } = Astro.props as Props;
             tags={p.data.tags}
             cover={p.data.cover}
             href={`/posts/${p.id}`}
+            tripSlug={p.data.trip}
+            tripName={p.data.trip ? tripNames[p.data.trip] : undefined}
           />
         ))
       }

@@ -10,6 +10,8 @@ interface Props {
   cover?: string;
   author?: string;
   commentCount?: number;
+  tripSlug?: string;
+  tripName?: string;
 }
 
 const {
@@ -21,6 +23,8 @@ const {
   cover,
   author = '叶枫影',
   commentCount = 0,
+  tripSlug,
+  tripName,
 } = Astro.props;
 
 const formattedDate = `${date.getFullYear()} 年 ${String(date.getMonth() + 1).padStart(2, '0')} 月 ${String(date.getDate()).padStart(2, '0')} 日`;
@@ -46,6 +50,14 @@ const formattedDate = `${date.getFullYear()} 年 ${String(date.getMonth() + 1).p
         <Icon name="messageCircle" size={13} />
         <span>{commentCount} 条评论</span>
       </span>
+      {
+        tripSlug && tripName && (
+          <a class="trip-chip" href={`/trips/${tripSlug}`}>
+            <Icon name="activity" size={11} />
+            <span>{tripName}</span>
+          </a>
+        )
+      }
       {
         tags.length > 0 && (
           <span class="meta-tags">
@@ -151,6 +163,27 @@ const formattedDate = `${date.getFullYear()} 年 ${String(date.getMonth() + 1).p
     display: inline-flex;
     align-items: center;
     gap: 4px;
+  }
+
+  .trip-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    color: inherit;
+    font-size: 11px;
+    transition: background 0.15s ease;
+  }
+
+  .post-card[data-has-cover='false'] .trip-chip {
+    background: var(--color-bg-subtle);
+  }
+
+  .trip-chip:hover {
+    background: var(--color-primary);
+    color: #fff;
   }
 
   .meta-tags {
