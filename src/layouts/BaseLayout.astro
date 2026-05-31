@@ -3,6 +3,7 @@ import '../styles/global.css';
 import LeftAside from '../components/LeftAside.astro';
 import TopBar from '../components/TopBar.astro';
 import Footer from '../components/Footer.astro';
+import analytics from '../data/analytics.json';
 
 interface Props {
   title?: string;
@@ -13,6 +14,8 @@ interface Props {
 }
 
 const { title, description, pageTitle, ogImage, ogType = 'website' } = Astro.props;
+const cf = analytics.cloudflare as { enabled: boolean; token: string };
+const cfBeacon = cf.enabled && cf.token ? JSON.stringify({ token: cf.token }) : null;
 const siteName = '叶枫影·听枫阁';
 const fullTitle = title ? `${title} — ${siteName}` : siteName;
 const desc = description ?? '生活的片段。照片、音乐与随笔。';
@@ -53,6 +56,14 @@ const ogImageUrl = ogImage
     {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
 
     <title>{fullTitle}</title>
+    {cfBeacon && (
+      <script
+        is:inline
+        defer
+        src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon={cfBeacon}
+      />
+    )}
     <script is:inline>
       (() => {
         const stored = localStorage.getItem('theme');
