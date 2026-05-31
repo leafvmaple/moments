@@ -1,19 +1,27 @@
 ---
-// Renders a Leaflet map of a post's photo trajectory.
-// Pass a slug; the component imports src/data/photo-meta/<slug>.json at build
-// and ships only the points (no EXIF, no thumbnails > full path) to the client.
-// If no meta file exists, renders nothing.
+// Renders a Leaflet map of one or more posts' photo trajectories.
+// Pass a single `slug` for a post-level trail, or `slugs[]` for a
+// trip-level combined trail. Either way, the component imports the
+// corresponding photo-meta JSON files at build time and ships only the
+// merged points to the client. If no meta file exists for the slug(s),
+// renders nothing.
 
 interface Props {
-  slug: string;
+  slug?: string;
+  slugs?: string[];
 }
-const { slug } = Astro.props as Props;
+const { slug, slugs } = Astro.props as Props;
+const requested = slugs ?? (slug ? [slug] : []);
+const canvasId = `trail-map-${slugs ? slugs.join('+') : slug}`;
 
 let points: Array<{ file: string; src: string; time: string; lat: number; lng: number }> = [];
-try {
-  points = (await import(`../data/photo-meta/${slug}.json`)).default;
-} catch {
-  // No trail data for this post — render nothing.
+for (const s of requested) {
+  try {
+    const arr = (await import(`../data/photo-meta/${s}.json`)).default;
+    points.push(...arr);
+  } catch {
+    // No trail data for this slug — skip.
+  }
 }
 
 // Group photos that share an exact coordinate into one marker. Multiple
@@ -35,7 +43,7 @@ const markers = Array.from(groups.values()).map((g) => ({
 {
   points.length > 0 && (
     <figure class="trail-map">
-      <div id={`trail-map-${slug}`} class="trail-map-canvas" data-points={JSON.stringify(markers)} />
+      <div id={canvasId} class="trail-map-canvas" data-points={JSON.stringify(markers)} />
       <figcaption>
         <span>{points.length} 张照片的实际拍摄位置 · CARTO / OSM</span>
       </figcaption>

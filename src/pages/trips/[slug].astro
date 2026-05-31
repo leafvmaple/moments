@@ -3,6 +3,7 @@ import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Sidebar from '../../components/Sidebar.astro';
 import Icon from '../../components/Icon.astro';
+import TrailMap from '../../components/TrailMap.astro';
 
 export async function getStaticPaths() {
   const trips = await getCollection('trips');
@@ -71,6 +72,8 @@ const fmtPostDate = (d: Date) =>
           <div class="markdown-body">
             <Content />
           </div>
+
+          <TrailMap slugs={posts.map((p) => p.id)} />
 
           {
             posts.length > 0 && (
