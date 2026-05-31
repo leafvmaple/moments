@@ -1,0 +1,7 @@
+name = "moments-likes"
+main = "src/index.ts"
+compatibility_date = "2026-05-31"
+
+[[kv_namespaces]]
+binding = "LIKES"
+id = "ea7721a6ac384cfd8f576c4403e35c4d"

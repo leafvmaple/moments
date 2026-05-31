@@ -1,0 +1,115 @@
+---
+import Icon from './Icon.astro';
+import likes from '../data/likes.json';
+
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+const cfg = likes as { enabled: boolean; endpoint: string };
+const ready = cfg.enabled && Boolean(cfg.endpoint);
+---
+
+{
+  ready && (
+    <div class="like-wrap">
+      <button
+        class="like-btn"
+        type="button"
+        aria-label="点赞这篇帖子"
+        data-slug={slug}
+        data-endpoint={cfg.endpoint}
+      >
+        <Icon name="heart" size={14} />
+        <span class="like-count" data-count>
+          —
+        </span>
+      </button>
+    </div>
+  )
+}
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.like-btn').forEach((btn) => {
+    const slug = btn.dataset.slug!;
+    const endpoint = btn.dataset.endpoint!;
+    const countEl = btn.querySelector<HTMLElement>('[data-count]')!;
+    const storageKey = `liked:${slug}`;
+    const alreadyLiked = () => localStorage.getItem(storageKey) === '1';
+    const url = `${endpoint.replace(/\/$/, '')}/likes?slug=${encodeURIComponent(slug)}`;
+
+    if (alreadyLiked()) {
+      btn.classList.add('liked');
+      btn.disabled = true;
+    }
+
+    fetch(url)
+      .then((r) => r.json())
+      .then((d: { count?: number }) => {
+        countEl.textContent = String(d.count ?? 0);
+      })
+      .catch(() => {
+        countEl.textContent = '?';
+      });
+
+    btn.addEventListener('click', async () => {
+      if (alreadyLiked()) return;
+      btn.disabled = true;
+      const current = parseInt(countEl.textContent || '0', 10) || 0;
+      countEl.textContent = String(current + 1);
+      btn.classList.add('liked');
+      try {
+        const r = await fetch(url, { method: 'POST' });
+        const d = (await r.json()) as { count?: number };
+        countEl.textContent = String(d.count ?? current + 1);
+        localStorage.setItem(storageKey, '1');
+      } catch {
+        countEl.textContent = String(current);
+        btn.classList.remove('liked');
+        btn.disabled = false;
+      }
+    });
+  });
+</script>
+
+<style>
+  .like-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-lg);
+  }
+
+  .like-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    color: var(--color-text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition:
+      color 120ms,
+      border-color 120ms,
+      background 120ms;
+  }
+
+  .like-btn:hover:not(:disabled) {
+    color: #e85a6f;
+    border-color: #e85a6f;
+  }
+
+  .like-btn.liked {
+    color: #e85a6f;
+    border-color: #e85a6f;
+    background: rgba(232, 90, 111, 0.08);
+    cursor: default;
+  }
+
+  .like-btn.liked :global(svg) {
+    fill: currentColor;
+  }
+</style>
