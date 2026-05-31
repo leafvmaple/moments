@@ -12,7 +12,9 @@ const allPosts = await getCollection('posts');
 const visible = excludeSlug ? allPosts.filter((p) => p.id !== excludeSlug) : allPosts;
 const sorted = [...visible].sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
+const allTrips = await getCollection('trips');
 const postCount = allPosts.length;
+const tripCount = allTrips.length;
 const commentCount = 0;
 
 const blogStart = new Date('2026-05-27');
@@ -148,6 +150,11 @@ const featuredItems = renderList(featured, 'featured');
         <Icon name="fileText" size={13} />
         <span class="stat-label">文章数目</span>
         <span class="badge">{postCount}</span>
+      </div>
+      <div class="stat-row">
+        <Icon name="activity" size={13} />
+        <span class="stat-label">行程数目</span>
+        <span class="badge">{tripCount}</span>
       </div>
       <div class="stat-row">
         <Icon name="messageCircle" size={13} />
