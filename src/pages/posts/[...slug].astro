@@ -9,15 +9,21 @@ import TrailMap from '../../components/TrailMap.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts');
+  const trips = await getCollection('trips');
+  const tripById = new Map(trips.map((t) => [t.id, t]));
   return posts.map((post) => ({
     params: { slug: post.id },
-    props: { post },
+    props: {
+      post,
+      trip: post.data.trip ? tripById.get(post.data.trip) ?? null : null,
+    },
   }));
 }
 
-type Props = { post: Awaited<ReturnType<typeof getCollection<'posts'>>>[number] };
+type Post = Awaited<ReturnType<typeof getCollection<'posts'>>>[number];
+type Trip = Awaited<ReturnType<typeof getCollection<'trips'>>>[number];
 
-const { post } = Astro.props as Props;
+const { post, trip } = Astro.props as { post: Post; trip: Trip | null };
 const { Content } = await render(post);
 
 const formattedDate = `${post.data.date.getFullYear()} 年 ${String(post.data.date.getMonth() + 1).padStart(2, '0')} 月 ${String(post.data.date.getDate()).padStart(2, '0')} 日`;
@@ -35,6 +41,14 @@ const formattedDate = `${post.data.date.getFullYear()} 年 ${String(post.data.da
       <article class="post">
         {post.data.cover && <img src={post.data.cover} alt={post.data.title} class="post-cover" />}
         <div class="post-body">
+          {
+            trip && (
+              <a class="trip-breadcrumb" href={`/trips/${trip.id}`}>
+                <Icon name="chevronRight" size={12} />
+                <span>属于行程 · {trip.data.name}</span>
+              </a>
+            )
+          }
           <h1 class="post-title">{post.data.title}</h1>
           <div class="post-meta">
             <span class="meta-item">
@@ -84,6 +98,20 @@ const formattedDate = `${post.data.date.getFullYear()} 年 ${String(post.data.da
 
   .post-body {
     padding: var(--space-xl);
+  }
+
+  .trip-breadcrumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--color-text-muted);
+    font-size: 12px;
+    margin-bottom: var(--space-sm);
+    transition: color 0.15s ease;
+  }
+
+  .trip-breadcrumb:hover {
+    color: var(--color-primary);
   }
 
   .post-title {
