@@ -9,7 +9,20 @@ const posts = defineCollection({
     tags: z.array(z.string()).default([]),
     excerpt: z.string().optional(),
     cover: z.string().optional(),
+    trip: z.string().optional(),
   }),
 });
 
-export const collections = { posts };
+const trips = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/trips' }),
+  schema: z.object({
+    name: z.string(),
+    startDate: z.coerce.date(),
+    endDate: z.coerce.date(),
+    country: z.string(),
+    excerpt: z.string().optional(),
+    cover: z.string().optional(),
+  }),
+});
+
+export const collections = { posts, trips };
