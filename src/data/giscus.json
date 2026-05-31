@@ -1,12 +1,12 @@
 {
-  "enabled": false,
-  "repo": "",
-  "repoId": "",
+  "enabled": true,
+  "repo": "leafvmaple/moments",
+  "repoId": "R_kgDOSpMP0g",
   "category": "Comments",
-  "categoryId": "",
+  "categoryId": "DIC_kwDOSpMP0s4C-Mh2",
   "mapping": "pathname",
   "strict": "0",
-  "reactionsEnabled": "1",
+  "reactionsEnabled": "0",
   "emitMetadata": "0",
   "inputPosition": "top",
   "lang": "zh-CN"
