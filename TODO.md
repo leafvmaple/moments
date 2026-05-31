@@ -58,6 +58,15 @@
 - 音乐播放器跨页面真正持续（view transitions / 持久 shell）。
 - quick-tabs 的"推荐"换成真实指标（阅读量 / 点赞数 / 评论数），需要先接上后端或者埋点。
 
+## 待写 / 待补素材
+
+### tokyo-2015 第二天 (1/25, 东京内)
+
+下一篇游记（1/25 还在东京，slug 暂定 `tokyo-2015-day2`），目前已经预处理的素材：
+
+- [public/images/tokyo-2015-day2/20150125_094743.jpg](public/images/tokyo-2015-day2/20150125_094743.jpg) —— 西新宿**希尔顿东京（ヒルトン東京）**的晨光全身照，门口停着橙色 Airport Limousine。1/25 09:47 拍，可作为开篇"清晨补拍住的地方"的钩子。**这张已经走完 copy+rename+quality 88 压缩**，可以直接 `![希尔顿东京晨光](/images/tokyo-2015-day2/20150125_094743.jpg)` 引用。
+- 后续添加 1/25 其他照片时，按同 slug 走完整 pipeline（copy → EXIF rename → compress → trail-map），新加照片可放同一目录 `public/images/tokyo-2015-day2/`。如果 slug 最终改名，把目录一并 rename。
+
 ## 待补全坐标 (Trail Map)
 
 > 自动生成区域：跑 `extract-photo-meta.mjs` 时会刷新下面这段（保留勾过的 `[x]` 和其他 slug 的条目）。
@@ -66,15 +75,5 @@
 > - 借用的坐标已经足够近、可以接受 → 把 `[ ]` 改成 `[x]` —— 下次跑保留 `[x]` 标记
 
 <!-- GPS_TODO:START -->
-- [ ] kyoto-winter/20200129_115705.jpg — borrowed:20200129_115131.jpg (±5.6min)
-- [ ] kyoto-winter/20200129_120147.jpg — borrowed:20200129_120814.jpg (±6.5min)
-- [ ] kyoto-winter/20200129_133030.jpg — borrowed:20200129_132659.jpg (±3.5min)
-- [ ] kyoto-winter/20200129_133118.jpg — borrowed:20200129_132659.jpg (±4.3min)
-- [ ] kyoto-winter/20200129_145240.jpg — borrowed:20200129_145110.jpg (±1.5min)
-- [ ] kyoto-winter/20200129_145428.jpg — borrowed:20200129_145110.jpg (±3.3min)
-- [ ] kyoto-winter/20200129_152834.jpg — borrowed:20200129_153238.jpg (±4.1min)
-- [ ] osaka/20200128_110029.jpg — borrowed:20200128_105946.jpg (±0.7min)
-- [ ] osaka/20200128_114211.jpg — borrowed:20200128_113443.jpg (±7.5min)
-- [ ] osaka/20200128_121347.jpg — borrowed:20200128_122045.jpg (±7.0min)
-- [ ] osaka/20200128_122208.jpg — borrowed:20200128_122045.jpg (±1.4min)
+
 <!-- GPS_TODO:END -->
