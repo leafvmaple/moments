@@ -82,6 +82,7 @@ frontmatter 字段：
 ---
 title: <标题>
 date: YYYY-MM-DD          # 用 EXIF 日期，不是写作日期
+trip: <trip-slug>         # 可选；归属的行程 slug，详见「行程 (Trip) 体系」
 tags: [旅行, <城市>, <国家>]
 excerpt: <80-120字钩子，能独立成段>
 cover: /images/<slug>/<YYYYMMDD_HHMMSS>.jpg
@@ -265,6 +266,67 @@ gh run list --limit 3 --workflow=deploy.yml
 
 ---
 
+## 行程 (Trip) 体系
+
+一次旅行通常横跨多个城市；每篇 post 写一个城市，多篇 post 通过一个 **trip** 聚合
+成一次行程。trip 是和 post 平级的 content collection，住在 `src/content/trips/`。
+
+### Slug 命名公约
+
+**`<国家>-<YYYY-MM>`**，全小写，如 `japan-2020-01`、`taiwan-2024-03`。
+
+- 月份精度足够区分 99% 的情况（同年同月重访同国家极罕见）
+- ISO 数字按时间天然排序，目录里一眼能看出先后
+- 不用「season」「winter」之类的主观词
+
+**冲突 fallback**（同月两次）：扩到起始日，如 `japan-2020-01-30` / `japan-2020-01-15`。
+
+**URL ≠ 显示名**：slug 是 URL 和引用标识；trip frontmatter 的 `name` 字段是页面/卡片
+上看到的人类可读名（如 `2020 一月 · 日本`）。两者解耦，slug 不需要好看。
+
+### Trip frontmatter
+
+```yaml
+---
+name: <显示名，如「2020 一月 · 日本」>
+startDate: YYYY-MM-DD      # 抵达日（用 EXIF 最早一张图的日期，不是最早一篇 post）
+endDate: YYYY-MM-DD        # 离开日
+country: <国家中文>
+excerpt: <80-150字钩子，整次旅行的一句话总结>
+cover: /images/<某篇post slug>/<YYYYMMDD_HHMMSS>.jpg  # 通常借一篇 post 的 cover
+---
+
+正文：3-6 段。背景（为什么去/和谁去/啥季节）、行程梗概（哪些城市哪些日子）、
+一两句立意（为什么这次旅行值得单独成篇）。**不要重复 post 里已经写过的细节**。
+```
+
+### Claude 写新 post 时的归属推断流程
+
+每次用户让我写新 post，**我先扫 `src/content/trips/`**：
+
+| 场景 | 做什么 |
+| --- | --- |
+| post 日期落在某 trip 的 `startDate`/`endDate` 区间内 | 自动加 `trip: <匹配的slug>`，告诉用户："归到 xxx 了，不对告诉我" |
+| 日期不匹配任何已有 trip 但看起来是旅行（多日跨地、有交通元素） | 反问："看起来是新行程，叫什么 slug？默认建议 `<国家>-<YYYY-MM>`，要的话我同步建一个 trip 文件" |
+| 单篇随笔、不属于任何行程 | 不加 `trip` 字段，让它单独存在 |
+| 用户明确说"归到 xxx" 或"不算行程" | 按用户指令 |
+
+**用户不需要在每次写 post 时手动指定 trip slug** —— 那是机械工作，由我据日期匹配。
+用户只在两种时刻需要决定：开启新行程（命名 + 创建 trip 文件）、纠正错判。
+
+### 同步更新的几个地方
+
+新建/改 trip 时，确认以下三处一致：
+
+1. **trip 文件本身**（`src/content/trips/<slug>.md`）—— source of truth
+2. **该行程下所有 post 的 `trip:` 字段** —— 指向 trip slug
+3. **trip 的 `startDate`/`endDate`** —— 覆盖该行程所有 post 的 `date`
+
+`/trips/<slug>` 页面会自动列出 `trip:` 字段匹配的所有 post（按日期升序），
+不需要在 trip 文件正文里手写帖子列表。
+
+---
+
 ## 几条容易踩的坑
 
 | 坑 | 现象 | 对策 |
@@ -293,6 +355,6 @@ gh run list --limit 3 --workflow=deploy.yml
 - [`src/content/posts/kyoto-winter.md`](src/content/posts/kyoto-winter.md)
   约 2500 字，18 张配图。**多段行程模板**：上午嵐山 + 下午伏见，用 `## 大块 + ### 章节`
   结构，结尾「半天灰，半天红」的并置呼应。
-- [`src/content/posts/osaka-castle-dotonbori.md`](src/content/posts/osaka-castle-dotonbori.md)
+- [`src/content/posts/osaka.md`](src/content/posts/osaka.md)
   约 1400 字，9 张配图。**单线行程模板**：从大阪城外围→天守阁→广场→出园→道顿堀→
   松屋牛丼，结尾呼应早上的鸽子。
