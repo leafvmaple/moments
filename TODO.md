@@ -58,15 +58,6 @@
 - 音乐播放器跨页面真正持续（view transitions / 持久 shell）。
 - quick-tabs 的"推荐"换成真实指标（阅读量 / 点赞数 / 评论数），需要先接上后端或者埋点。
 
-## 待写 / 待补素材
-
-### tokyo-2015 第二天 (1/25, 东京内)
-
-下一篇游记（1/25 还在东京，slug 暂定 `tokyo-2015-day2`），目前已经预处理的素材：
-
-- [public/images/tokyo-2015-day2/20150125_094743.jpg](public/images/tokyo-2015-day2/20150125_094743.jpg) —— 西新宿**希尔顿东京（ヒルトン東京）**的晨光全身照，门口停着橙色 Airport Limousine。1/25 09:47 拍，可作为开篇"清晨补拍住的地方"的钩子。**这张已经走完 copy+rename+quality 88 压缩**，可以直接 `![希尔顿东京晨光](/images/tokyo-2015-day2/20150125_094743.jpg)` 引用。
-- 后续添加 1/25 其他照片时，按同 slug 走完整 pipeline（copy → EXIF rename → compress → trail-map），新加照片可放同一目录 `public/images/tokyo-2015-day2/`。如果 slug 最终改名，把目录一并 rename。
-
 ## 待补全坐标 (Trail Map)
 
 > 自动生成区域：跑 `extract-photo-meta.mjs` 时会刷新下面这段（保留勾过的 `[x]` 和其他 slug 的条目）。
