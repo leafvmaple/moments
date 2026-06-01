@@ -316,3 +316,39 @@ hr {
 .markdown-body a:hover {
   border-bottom-color: var(--color-primary);
 }
+
+/* 余韵 / P.S. 段：默认折叠、点开展开 */
+.markdown-body details.postscript {
+  margin: var(--space-xl) 0;
+  border-left: 2px solid var(--color-primary);
+  padding: var(--space-sm) var(--space-md);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.markdown-body details.postscript summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.05em;
+  list-style: none;
+  user-select: none;
+  color: var(--color-primary);
+}
+
+.markdown-body details.postscript summary::-webkit-details-marker {
+  display: none;
+}
+
+.markdown-body details.postscript summary::before {
+  content: "▸";
+  display: inline-block;
+  margin-right: 0.4em;
+  transition: transform 0.2s ease;
+}
+
+.markdown-body details.postscript[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.markdown-body details.postscript[open] summary {
+  margin-bottom: var(--space-md);
+}
