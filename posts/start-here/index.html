@@ -314,6 +314,23 @@
     }
 
     const TRIGGER_OFFSET = 100;
+    const SCROLL_IDLE_MS = 150;
+
+    // 用户点击 TOC 链接时锁定 scroll-spy。不依赖 scrollend 事件（在 smooth scroll
+    // 的最终结算阶段触发时机不稳定，会让 scroll-spy 在末尾几帧短暂解锁、算出
+    // 一个跳变的 active）。改成"scroll idle"模式：scroll 事件持续 SCROLL_IDLE_MS
+    // 都没有再触发，才认为滚动真正停下。
+    let isUserScrolling = false;
+    let idleTimer = null;
+    function bumpIdleTimer() {
+      if (!isUserScrolling) return;
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        isUserScrolling = false;
+        idleTimer = null;
+      }, SCROLL_IDLE_MS);
+    }
+
     function updateActive() {
       const containerTop = usesAppMain ? scrollHost.getBoundingClientRect().top : 0;
       let activeSlug = null;
@@ -328,9 +345,65 @@
       setActive(activeSlug);
     }
 
+    function onScroll() {
+      if (isUserScrolling) {
+        // 锁定期间：每个 scroll 事件重置 idle timer。scroll 停下来 150ms 才解锁。
+        bumpIdleTimer();
+        return;
+      }
+      updateActive();
+    }
+
     updateActive();
-    scroller.addEventListener('scroll', updateActive, { passive: true });
+    scroller.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', updateActive);
+
+    /*
+     * 自实现的滚动动画 —— 目前用「匀速」(linear)。
+     *
+     * 之所以不用原生 element.scrollIntoView({behavior:'smooth'})：
+     *   原生 smooth 是浏览器默认的 ease-out 缓动曲线（开头快、结尾慢），
+     *   用户希望整段动画是匀速的、所以自己 rAF 驱动 scrollTop。
+     *
+     * 想恢复成原生 ease-out (快→慢)，**最简一行替换**：
+     *   把 `animatedScrollTo(target)` 改回
+     *   `target.scrollIntoView({behavior:'smooth', block:'start'})`
+     *
+     * 想换其它 easing curve，把 step() 里
+     *   `const eased = progress;          // linear`
+     * 改成下面任一行：
+     *   const eased = 1 - (1 - progress) * (1 - progress);          // ease-out (快→慢)
+     *   const eased = progress * progress;                          // ease-in  (慢→快)
+     *   const eased = progress < 0.5                                // ease-in-out
+     *     ? 2 * progress * progress
+     *     : 1 - 2 * (1 - progress) * (1 - progress);
+     *   const eased = 1 - Math.pow(1 - progress, 3);                // cubic ease-out
+     */
+    function animatedScrollTo(targetEl, duration = 400) {
+      const containerTop = usesAppMain ? scrollHost.getBoundingClientRect().top : 0;
+      const currentScrollTop = usesAppMain ? scrollHost.scrollTop : window.scrollY;
+      // 读 CSS 的 scroll-margin-top（全局 .markdown-body h1/h2/h3 上设了 56+16=72px）
+      const scrollMargin = parseFloat(getComputedStyle(targetEl).scrollMarginTop) || 0;
+      const targetScrollTop =
+        currentScrollTop + (targetEl.getBoundingClientRect().top - containerTop) - scrollMargin;
+      const startScrollTop = currentScrollTop;
+      const delta = targetScrollTop - startScrollTop;
+      if (Math.abs(delta) < 1) return;
+      const startTime = performance.now();
+      function step(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = progress; // linear —— 匀速
+        const newTop = startScrollTop + delta * eased;
+        if (usesAppMain) {
+          scrollHost.scrollTop = newTop;
+        } else {
+          window.scrollTo(0, newTop);
+        }
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
 
     tocLinks.forEach((link) => {
       link.addEventListener('click', (e) => {
@@ -339,7 +412,12 @@
         const target = document.getElementById(slug);
         if (!target) return;
         e.preventDefault();
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // 上锁、起 idle timer、再开滚、再立即 setActive。
+        // 自实现的滚动每帧都会改 scrollTop、原生 scroll 事件持续触发，
+        // 会一直 bump idle timer 保持上锁；停 150ms 才解锁。
+        isUserScrolling = true;
+        bumpIdleTimer();
+        animatedScrollTo(target);
         history.replaceState(null, '', `#${slug}`);
         setActive(slug);
       });
