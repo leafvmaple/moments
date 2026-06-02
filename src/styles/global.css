@@ -222,6 +222,9 @@ hr {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+  /* 覆盖 .content-grid 的 align-items: start，让侧栏拉伸到与左列同高，
+     这样里面的 position: sticky 元素能在整段滚动里持续停在顶部。 */
+  align-self: stretch;
 }
 
 @media (max-width: 1100px) {
@@ -294,6 +297,9 @@ hr {
 .markdown-body h2,
 .markdown-body h3 {
   margin-top: var(--space-xl);
+  /* 补偿 sticky topbar 高度（--topbar-h: 56px）+ 一点呼吸空间，
+     anchor 跳转时标题不会被 topbar 遮住。 */
+  scroll-margin-top: calc(var(--topbar-h) + var(--space-md));
 }
 
 .markdown-body img {

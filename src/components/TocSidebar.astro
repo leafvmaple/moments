@@ -1,0 +1,242 @@
+---
+// Renders an article TOC with nested H3 under each H2.
+// Only the currently-active H2's H3 children are expanded; other
+// H2 sections collapse — like Handsome theme's TOC behavior.
+// Active highlighting + smooth scroll tied to .app-main scroll container.
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+interface TocNode {
+  slug: string;
+  text: string;
+  children: TocNode[];
+}
+
+interface Props {
+  headings: Heading[];
+}
+const { headings } = Astro.props as Props;
+const flat = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
+
+// Group H3s under their preceding H2.
+const tree: TocNode[] = [];
+let currentH2: TocNode | null = null;
+for (const h of flat) {
+  const node: TocNode = { slug: h.slug, text: h.text, children: [] };
+  if (h.depth === 2) {
+    currentH2 = node;
+    tree.push(node);
+  } else if (currentH2) {
+    currentH2.children.push(node);
+  } else {
+    tree.push(node);
+  }
+}
+
+const tooFewToBother = flat.length < 3;
+---
+
+{
+  !tooFewToBother && (
+    <nav class="toc" aria-label="文章目录">
+      <div class="toc-title">文章目录</div>
+      <ul class="toc-list">
+        {tree.map((item) => (
+          <li class={`toc-item${item.children.length > 0 ? ' has-children' : ''}`}>
+            <a href={`#${item.slug}`} data-toc-slug={item.slug}>
+              {item.text}
+            </a>
+            {item.children.length > 0 && (
+              <ul class="toc-children">
+                {item.children.map((child) => (
+                  <li class="toc-item toc-child">
+                    <a href={`#${child.slug}`} data-toc-slug={child.slug}>
+                      {child.text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<style>
+  .toc {
+    position: sticky;
+    /* sticky 顶边紧贴 topbar 底边（topbar 高 56px），不留多余间距，跟 cover/post body 上边对齐 */
+    top: var(--topbar-h);
+    background: var(--color-bg-card);
+    border-radius: var(--radius-card);
+    padding: var(--space-md);
+    box-shadow: var(--shadow-card);
+    max-height: calc(100vh - var(--topbar-h) - var(--space-md));
+    overflow-y: auto;
+  }
+
+  .toc-title {
+    color: var(--color-text-muted);
+    font-size: 13px;
+    margin-bottom: var(--space-sm);
+    padding-left: var(--space-sm);
+    letter-spacing: 0.04em;
+  }
+
+  .toc-list,
+  .toc-children {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .toc-item a {
+    display: block;
+    padding: 6px var(--space-sm);
+    color: var(--color-text-muted);
+    font-size: 13px;
+    line-height: 1.4;
+    border-radius: 4px;
+    border-left: 2px solid transparent;
+    transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    text-decoration: none;
+  }
+
+  .toc-item a:hover {
+    color: var(--color-primary);
+    background: rgba(0, 0, 0, 0.025);
+  }
+
+  .toc-item a.active {
+    color: var(--color-primary);
+    background: rgba(0, 0, 0, 0.04);
+    border-left-color: var(--color-primary);
+  }
+
+  /* 子项默认折叠 —— 只在父 H2 处于 active-parent 状态时展开 */
+  .toc-children {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, margin-top 0.3s ease;
+  }
+
+  .toc-item.has-children.active-parent > .toc-children {
+    max-height: 1000px;
+    margin-top: 4px;
+  }
+
+  .toc-child a {
+    padding-left: calc(var(--space-sm) + var(--space-md));
+    font-size: 12px;
+  }
+
+  /* TOC 自己的滚动条克制一些 */
+  .toc::-webkit-scrollbar {
+    width: 4px;
+  }
+  .toc::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+  }
+</style>
+
+<script is:inline>
+  // Scroll-spy: 跟踪当前阅读到的 heading；同时把它所属的 H2 li 设为 active-parent
+  // 让 .toc-children 展开（其余 H2 的子项收起）。
+  // 滚动容器是 .app-main（height: 100vh + overflow-y: auto）而不是 window。
+
+  function initToc() {
+    const tocLinks = document.querySelectorAll('.toc a[data-toc-slug]');
+    if (tocLinks.length === 0) return;
+
+    const scrollHost = document.querySelector('.app-main');
+    const usesAppMain = !!scrollHost && getComputedStyle(scrollHost).overflowY === 'auto';
+    const scroller = usesAppMain ? scrollHost : window;
+
+    const slugToLink = new Map();
+    const headings = [];
+    tocLinks.forEach((link) => {
+      const slug = link.dataset.tocSlug;
+      if (!slug) return;
+      const el = document.getElementById(slug);
+      if (el) {
+        slugToLink.set(slug, link);
+        headings.push(el);
+      }
+    });
+    if (headings.length === 0) return;
+
+    let currentActiveLink = null;
+    let currentActiveParent = null;
+
+    function setActive(slug) {
+      const link = slug ? slugToLink.get(slug) || null : null;
+
+      // 1) 高亮当前 link
+      if (link !== currentActiveLink) {
+        if (currentActiveLink) currentActiveLink.classList.remove('active');
+        if (link) link.classList.add('active');
+        currentActiveLink = link;
+      }
+
+      // 2) 决定哪个 H2 li 该展开
+      // closest('.has-children') 找到当前 link 所在的（或所属的）H2 li。
+      // - link 在 H2 li 上：closest 直接返回该 H2 li
+      // - link 在 H3 li (.toc-child) 上：closest 沿祖先链找到包裹它的 .has-children H2 li
+      let parentH2Li = null;
+      if (link) {
+        const candidate = link.closest('.toc-item.has-children');
+        if (candidate) parentH2Li = candidate;
+      }
+
+      if (parentH2Li !== currentActiveParent) {
+        if (currentActiveParent) currentActiveParent.classList.remove('active-parent');
+        if (parentH2Li) parentH2Li.classList.add('active-parent');
+        currentActiveParent = parentH2Li;
+      }
+    }
+
+    const TRIGGER_OFFSET = 100;
+    function updateActive() {
+      const containerTop = usesAppMain ? scrollHost.getBoundingClientRect().top : 0;
+      let activeSlug = null;
+      for (const h of headings) {
+        const offset = h.getBoundingClientRect().top - containerTop;
+        if (offset - TRIGGER_OFFSET <= 0) {
+          activeSlug = h.id;
+        } else {
+          break;
+        }
+      }
+      setActive(activeSlug);
+    }
+
+    updateActive();
+    scroller.addEventListener('scroll', updateActive, { passive: true });
+    window.addEventListener('resize', updateActive);
+
+    tocLinks.forEach((link) => {
+      link.addEventListener('click', (e) => {
+        const slug = link.dataset.tocSlug;
+        if (!slug) return;
+        const target = document.getElementById(slug);
+        if (!target) return;
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        history.replaceState(null, '', `#${slug}`);
+        setActive(slug);
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initToc);
+  } else {
+    initToc();
+  }
+</script>

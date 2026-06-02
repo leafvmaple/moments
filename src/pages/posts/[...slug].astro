@@ -6,6 +6,7 @@ import Icon from '../../components/Icon.astro';
 import Comments from '../../components/Comments.astro';
 import LikeButton from '../../components/LikeButton.astro';
 import TrailMap from '../../components/TrailMap.astro';
+import TocSidebar from '../../components/TocSidebar.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts');
@@ -24,7 +25,7 @@ type Post = Awaited<ReturnType<typeof getCollection<'posts'>>>[number];
 type Trip = Awaited<ReturnType<typeof getCollection<'trips'>>>[number];
 
 const { post, trip } = Astro.props as { post: Post; trip: Trip | null };
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
 
 const formattedDate = `${post.data.date.getFullYear()} 年 ${String(post.data.date.getMonth() + 1).padStart(2, '0')} 月 ${String(post.data.date.getDate()).padStart(2, '0')} 日`;
 ---
@@ -78,7 +79,10 @@ const formattedDate = `${post.data.date.getFullYear()} 年 ${String(post.data.da
       </article>
       <Comments />
     </div>
-    <Sidebar excludeSlug={post.id} />
+    <div class="content-sidebar">
+      <TocSidebar headings={headings} />
+      <Sidebar excludeSlug={post.id} />
+    </div>
   </div>
 </BaseLayout>
 
