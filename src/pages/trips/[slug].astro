@@ -4,6 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Sidebar from '../../components/Sidebar.astro';
 import Icon from '../../components/Icon.astro';
 import TrailMap from '../../components/TrailMap.astro';
+import ImageZoom from '../../components/ImageZoom.astro';
 
 export async function getStaticPaths() {
   const trips = await getCollection('trips');
@@ -104,6 +105,7 @@ const fmtPostDate = (d: Date) =>
           }
         </div>
       </article>
+      <ImageZoom />
     </div>
     <Sidebar />
   </div>

@@ -1,0 +1,49 @@
+---
+// Wraps medium-zoom — click any .markdown-body img (or .post-cover) to zoom.
+// Re-targets after each Astro page navigation since module scripts only run once.
+---
+
+<script>
+  import mediumZoom from 'medium-zoom';
+
+  let zoom: ReturnType<typeof mediumZoom> | null = null;
+
+  function applyZoom() {
+    // Re-attach on each page enter so Astro view transitions / re-renders pick up
+    // images that were not in the DOM at script-init time.
+    if (!zoom) {
+      zoom = mediumZoom('.markdown-body img, .post-cover, .trip-cover', {
+        background: 'rgba(0, 0, 0, 0.88)',
+        margin: 32,
+      });
+    } else {
+      zoom.detach();
+      zoom.attach('.markdown-body img, .post-cover, .trip-cover');
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyZoom);
+  } else {
+    applyZoom();
+  }
+</script>
+
+<style is:global>
+  /* Make zoomable images visually hint at being clickable */
+  .markdown-body img,
+  .post-cover,
+  .trip-cover {
+    cursor: zoom-in;
+  }
+  .medium-zoom-image--opened {
+    cursor: zoom-out;
+  }
+  /* Overlay matches our dark-mode backdrop in either theme */
+  .medium-zoom-overlay {
+    z-index: 1000;
+  }
+  .medium-zoom-image {
+    z-index: 1001;
+  }
+</style>
