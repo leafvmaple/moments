@@ -136,11 +136,15 @@ const tooFewToBother = flat.length < 3;
   }
 
   /* TOC 自己的滚动条克制一些 */
+  .toc {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
   .toc::-webkit-scrollbar {
     width: 4px;
   }
   .toc::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.1);
+    background: var(--scrollbar-thumb);
     border-radius: 2px;
   }
 </style>
