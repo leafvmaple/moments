@@ -3,7 +3,7 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://moments.leafvmaple.com',
+  site: 'https://leafvmaple.com',
   trailingSlash: 'never',
   build: {
     format: 'directory',

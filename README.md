@@ -1,8 +1,8 @@
 # moments · 叶枫影
 
-生活的片段。照片、音乐、随笔 —— 与技术博客 [leafvmaple.com](https://leafvmaple.com) 互为补集。
+生活的片段。照片、音乐、随笔 —— 与技术博客 [code.leafvmaple.com](https://code.leafvmaple.com) 互为补集。
 
-**访问地址**：[moments.leafvmaple.com](https://moments.leafvmaple.com)
+**访问地址**：[leafvmaple.com](https://leafvmaple.com)（旧地址 `moments.leafvmaple.com` 自动 301 跳转、链接不失效）
 
 ## 怎么写
 

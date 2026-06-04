@@ -9,7 +9,7 @@ const links = [
   { href: '/archive', label: '归档', icon: 'calendar' },
   { href: '/links', label: '友链', icon: 'link' },
   { href: '/about', label: '关于', icon: 'info' },
-  { href: 'https://leafvmaple.com', label: '技术博客', icon: 'link', external: true },
+  { href: 'https://code.leafvmaple.com', label: '技术博客', icon: 'link', external: true },
 ];
 
 const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
@@ -55,7 +55,7 @@ const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
     <a href="/rss.xml" aria-label="RSS">
       <Icon name="rss" size={14} />
     </a>
-    <a href="https://leafvmaple.com" target="_blank" rel="noopener noreferrer" aria-label="技术博客">
+    <a href="https://code.leafvmaple.com" target="_blank" rel="noopener noreferrer" aria-label="技术博客">
       <Icon name="link" size={14} />
     </a>
   </div>
