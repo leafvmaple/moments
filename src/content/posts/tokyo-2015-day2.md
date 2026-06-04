@@ -2,6 +2,9 @@
 title: 甲午年腊月，东京到札幌
 date: 2015-01-25
 trip: japan-2015-01
+places:
+  - tokyo
+  - sapporo
 tags:
   - 旅行
   - 东京

@@ -2,6 +2,9 @@
 title: 甲午年腊月，札幌出发的一整天
 date: 2015-01-26
 trip: japan-2015-01
+places:
+  - sapporo
+  - jozankei
 tags:
   - 旅行
   - 札幌

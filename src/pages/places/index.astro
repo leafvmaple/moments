@@ -1,0 +1,111 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Sidebar from '../../components/Sidebar.astro';
+import PlaceTreeNode from '../../components/PlaceTreeNode.astro';
+
+const places = await getCollection('places');
+const posts = await getCollection('posts');
+
+type PlaceNode = {
+  id: string;
+  name: string;
+  excerpt?: string;
+  cover?: string;
+  children: PlaceNode[];
+  directPostCount: number;
+};
+
+const nodeById = new Map<string, PlaceNode>();
+for (const p of places) {
+  nodeById.set(p.id, {
+    id: p.id,
+    name: p.data.name,
+    excerpt: p.data.excerpt,
+    cover: p.data.cover,
+    children: [],
+    directPostCount: 0,
+  });
+}
+
+// Count direct posts per place
+for (const post of posts) {
+  for (const placeId of post.data.places) {
+    const node = nodeById.get(placeId);
+    if (node) node.directPostCount += 1;
+  }
+}
+
+// Build tree by linking children to parents
+const roots: PlaceNode[] = [];
+for (const p of places) {
+  const node = nodeById.get(p.id)!;
+  if (p.data.parent && nodeById.has(p.data.parent)) {
+    nodeById.get(p.data.parent)!.children.push(node);
+  } else {
+    roots.push(node);
+  }
+}
+
+// Sort roots and children alphabetically by name (stable)
+function sortTree(nodes: PlaceNode[]) {
+  nodes.sort((a, b) => a.name.localeCompare(b.name));
+  for (const n of nodes) sortTree(n.children);
+}
+sortTree(roots);
+---
+
+<BaseLayout title="地点" description="按地点组织的旅行记录。" pageTitle="地点">
+  <div class="content-grid">
+    <section class="content-main">
+      <header class="page-header panel">
+        <h1>地点 · Places</h1>
+        <p>把同一个地方多次去过的文章收在一起。</p>
+      </header>
+
+      {
+        roots.length === 0 ? (
+          <div class="panel empty">
+            <p>暂无地点。在 <code>src/content/places/</code> 添加 Markdown 即可。</p>
+          </div>
+        ) : (
+          <ul class="place-tree">
+            {roots.map((root) => (
+              <PlaceTreeNode node={root} />
+            ))}
+          </ul>
+        )
+      }
+    </section>
+    <Sidebar />
+  </div>
+</BaseLayout>
+
+<style>
+  .page-header {
+    margin-bottom: var(--space-md);
+  }
+  .page-header h1 {
+    margin: 0 0 var(--space-sm);
+    font-weight: 300;
+    font-size: 24px;
+  }
+  .page-header p {
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
+  .empty {
+    text-align: center;
+    color: var(--color-text-muted);
+  }
+
+  .place-tree {
+    list-style: none;
+    margin: 0;
+    padding: var(--space-lg);
+    background: var(--color-bg-card);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+</style>

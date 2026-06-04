@@ -2,6 +2,9 @@
 title: 甲午年腊月，京都到大阪
 date: 2015-01-28
 trip: japan-2015-01
+places:
+  - kyoto
+  - osaka
 tags:
   - 旅行
   - 京都

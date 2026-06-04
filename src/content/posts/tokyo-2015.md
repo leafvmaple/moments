@@ -2,6 +2,8 @@
 title: 甲午年腊月，东京一日
 date: 2015-01-24
 trip: japan-2015-01
+places:
+  - tokyo
 tags:
   - 旅行
   - 东京

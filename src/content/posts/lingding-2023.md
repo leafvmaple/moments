@@ -2,6 +2,8 @@
 title: 癸卯年二月，再访外伶仃
 date: 2023-03-04
 trip: lingding-2023
+places:
+  - lingding
 tags:
   - 旅行
   - 珠海

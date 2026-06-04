@@ -10,6 +10,7 @@ const posts = defineCollection({
     excerpt: z.string().optional(),
     cover: z.string().optional(),
     trip: z.string().optional(),
+    places: z.array(z.string()).default([]),
   }),
 });
 
@@ -25,4 +26,14 @@ const trips = defineCollection({
   }),
 });
 
-export const collections = { posts, trips };
+const places = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/places' }),
+  schema: z.object({
+    name: z.string(),
+    parent: z.string().optional(),
+    excerpt: z.string().optional(),
+    cover: z.string().optional(),
+  }),
+});
+
+export const collections = { posts, trips, places };

@@ -2,6 +2,9 @@
 title: 甲午年腊月，往返
 date: 2015-01-23
 trip: japan-2015-01
+places:
+  - zhuhai
+  - tokyo
 tags:
   - 旅行
   - 珠海

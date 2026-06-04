@@ -1,0 +1,88 @@
+---
+export interface PlaceNode {
+  id: string;
+  name: string;
+  excerpt?: string;
+  cover?: string;
+  children: PlaceNode[];
+  directPostCount: number;
+}
+
+interface Props {
+  node: PlaceNode;
+  depth?: number;
+}
+
+const { node, depth = 0 } = Astro.props;
+
+function totalCount(n: PlaceNode): number {
+  return n.directPostCount + n.children.reduce((s, c) => s + totalCount(c), 0);
+}
+---
+
+<li class="place-node" data-depth={depth}>
+  <a class="place-link" href={`/places/${node.id}`}>
+    <span class="place-name">{node.name}</span>
+    <span class="place-count">{totalCount(node)} 篇</span>
+  </a>
+  {node.excerpt && <p class="place-excerpt">{node.excerpt}</p>}
+  {
+    node.children.length > 0 && (
+      <ul class="place-children">
+        {node.children.map((c) => (
+          <Astro.self node={c} depth={depth + 1} />
+        ))}
+      </ul>
+    )
+  }
+</li>
+
+<style>
+  .place-node {
+    padding: var(--space-sm) 0;
+    list-style: none;
+  }
+
+  .place-link {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-sm);
+    color: var(--color-heading);
+    font-size: 15px;
+    transition: color 0.15s ease;
+  }
+  .place-link:hover {
+    color: var(--color-primary);
+  }
+
+  .place-name {
+    font-weight: 500;
+  }
+
+  .place-count {
+    color: var(--color-text-muted);
+    font-size: 12px;
+  }
+
+  .place-excerpt {
+    color: var(--color-text-muted);
+    font-size: 13px;
+    margin: 4px 0 0;
+    line-height: 1.55;
+  }
+
+  .place-children {
+    list-style: none;
+    margin: var(--space-sm) 0 0;
+    padding-left: var(--space-lg);
+    border-left: 1px solid var(--color-border);
+  }
+
+  /* nested levels shrink slightly */
+  .place-children .place-link {
+    font-size: 14px;
+  }
+  .place-children .place-children .place-link {
+    font-size: 13px;
+  }
+</style>

@@ -2,6 +2,8 @@
 title: 壬寅年三月，外伶仃
 date: 2022-04-03
 trip: lingding-2022
+places:
+  - lingding
 tags:
   - 旅行
   - 珠海

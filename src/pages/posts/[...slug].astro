@@ -12,20 +12,24 @@ import ImageZoom from '../../components/ImageZoom.astro';
 export async function getStaticPaths() {
   const posts = await getCollection('posts');
   const trips = await getCollection('trips');
+  const places = await getCollection('places');
   const tripById = new Map(trips.map((t) => [t.id, t]));
+  const placeById = new Map(places.map((p) => [p.id, p]));
   return posts.map((post) => ({
     params: { slug: post.id },
     props: {
       post,
       trip: post.data.trip ? tripById.get(post.data.trip) ?? null : null,
+      postPlaces: post.data.places.map((id) => placeById.get(id)).filter(Boolean),
     },
   }));
 }
 
 type Post = Awaited<ReturnType<typeof getCollection<'posts'>>>[number];
 type Trip = Awaited<ReturnType<typeof getCollection<'trips'>>>[number];
+type Place = Awaited<ReturnType<typeof getCollection<'places'>>>[number];
 
-const { post, trip } = Astro.props as { post: Post; trip: Trip | null };
+const { post, trip, postPlaces } = Astro.props as { post: Post; trip: Trip | null; postPlaces: Place[] };
 const { Content, headings } = await render(post);
 
 const formattedDate = `${post.data.date.getFullYear()} 年 ${String(post.data.date.getMonth() + 1).padStart(2, '0')} 月 ${String(post.data.date.getDate()).padStart(2, '0')} 日`;
@@ -49,6 +53,20 @@ const formattedDate = `${post.data.date.getFullYear()} 年 ${String(post.data.da
                 <Icon name="chevronRight" size={12} />
                 <span>属于行程 · {trip.data.name}</span>
               </a>
+            )
+          }
+          {
+            postPlaces.length > 0 && (
+              <div class="place-breadcrumb">
+                <Icon name="map" size={12} />
+                <span>地点 ·</span>
+                {postPlaces.map((p, i) => (
+                  <>
+                    {i > 0 && <span class="sep">/</span>}
+                    <a href={`/places/${p.id}`}>{p.data.name}</a>
+                  </>
+                ))}
+              </div>
             )
           }
           <h1 class="post-title">{post.data.title}</h1>
@@ -118,6 +136,25 @@ const formattedDate = `${post.data.date.getFullYear()} 年 ${String(post.data.da
 
   .trip-breadcrumb:hover {
     color: var(--color-primary);
+  }
+
+  .place-breadcrumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--color-text-muted);
+    font-size: 12px;
+    margin-bottom: var(--space-md);
+  }
+  .place-breadcrumb a {
+    color: var(--color-text-muted);
+    transition: color 0.15s ease;
+  }
+  .place-breadcrumb a:hover {
+    color: var(--color-primary);
+  }
+  .place-breadcrumb .sep {
+    opacity: 0.5;
   }
 
   .post-title {

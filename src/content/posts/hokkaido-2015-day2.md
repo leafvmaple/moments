@@ -2,6 +2,9 @@
 title: 甲午年腊月，小樽到神户
 date: 2015-01-27
 trip: japan-2015-01
+places:
+  - otaru
+  - kobe
 tags:
   - 旅行
   - 小樽
