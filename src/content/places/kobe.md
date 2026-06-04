@@ -1,6 +1,6 @@
 ---
 name: 神户
-parent: japan
+parent: hyogo
 excerpt: 兵库县首府、关西西部港湾城市、1995 年阪神大震灾发生地。
 cover: /images/hokkaido-2015-day2/20150127_220419.jpg
 ---

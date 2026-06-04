@@ -95,23 +95,49 @@ const markers = Array.from(groups.values()).map((g) => ({
       }
 
       const map = L.map(el);
-      if (useChinaMap) {
-        // 高德矢量灰白底（style=8）—— 跟 CARTO Voyager 调子最接近、中文标注。
-        L.tileLayer(
-          'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
-          {
-            attribution: '&copy; <a href="https://amap.com">高德地图</a>',
-            subdomains: '1234',
-            maxZoom: 18,
-          },
-        ).addTo(map);
-      } else {
-        // CARTO Voyager: OSM-derived, WGS-84 (matches EXIF), free for OSS.
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; OpenStreetMap &copy; CARTO',
-          subdomains: 'abcd',
-          maxZoom: 19,
-        }).addTo(map);
+
+      // Two tile layers per case (light/dark) — swap when theme toggles.
+      // 高德 没有官方好看的暗色矢量底、灰白在两种主题下都不扎眼、就都用 style=8。
+      const lightTile = useChinaMap
+        ? L.tileLayer(
+            'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+            {
+              attribution: '&copy; <a href="https://amap.com">高德地图</a>',
+              subdomains: '1234',
+              maxZoom: 18,
+            },
+          )
+        : L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CARTO',
+            subdomains: 'abcd',
+            maxZoom: 19,
+          });
+      const darkTile = useChinaMap
+        ? lightTile
+        : L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CARTO',
+            subdomains: 'abcd',
+            maxZoom: 19,
+          });
+
+      const isDark = () => document.documentElement.dataset.theme === 'dark';
+      let currentTile = isDark() ? darkTile : lightTile;
+      currentTile.addTo(map);
+
+      // React to runtime theme toggle.
+      if (!useChinaMap) {
+        const obs = new MutationObserver(() => {
+          const next = isDark() ? darkTile : lightTile;
+          if (next !== currentTile) {
+            map.removeLayer(currentTile);
+            next.addTo(map);
+            currentTile = next;
+          }
+        });
+        obs.observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ['data-theme'],
+        });
       }
 
       // Order markers by first-photo time so the trail line follows the trip.

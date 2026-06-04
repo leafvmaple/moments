@@ -1,0 +1,273 @@
+---
+// World map with multi-level "lit-up" regions:
+//   - World countries (world-atlas, country-level) — for countries we've
+//     visited but don't have province data for (or just to give context)
+//   - China provinces (DataV官方 GeoJSON) — when we've visited China
+//   - Japan prefectures (dataofjapan TopoJSON) — when we've visited Japan
+//
+// Visited region is determined by walking up each post's `places` chain to
+// the "last node before the root" — that's the province/prefecture-level
+// place id. Mapped to GeoJSON property names below.
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('posts');
+const places = await getCollection('places');
+const placeById = new Map(places.map((p) => [p.id, p]));
+
+// Walk up from `placeId` until we find a place whose parent is undefined
+// (= root, i.e. country). Return the last id we saw before that root.
+// For tokyo (parent=japan): returns 'tokyo'.
+// For lingding (-> zhuhai -> guangdong -> china): returns 'guangdong'.
+function provinceOf(placeId: string): string | null {
+  let cur: string | undefined = placeId;
+  let lastBeforeRoot = cur;
+  for (let i = 0; i < 16 && cur; i++) {
+    const place = placeById.get(cur);
+    if (!place) return null;
+    if (!place.data.parent) {
+      // cur is root. If we never moved, the post's only place is the country
+      // itself (no province data) — return null.
+      return lastBeforeRoot === cur ? null : lastBeforeRoot;
+    }
+    lastBeforeRoot = cur;
+    cur = place.data.parent;
+  }
+  return null;
+}
+
+// Map our place id → the region name as it appears in the GeoJSON property:
+//   - China geojson uses simplified Chinese: 「广东省」「北京市」「香港特别行政区」
+//   - Japan topojson uses Japanese 「東京都」「京都府」「兵庫県」「北海道」
+const placeIdToRegionName: Record<string, string> = {
+  // China provinces (properties.name)
+  guangdong: '广东省',
+  // add as posts grow: beijing: '北京市', shanghai: '上海市', sichuan: '四川省', ...
+  // Japan prefectures (properties.nam_ja)
+  tokyo: '東京都',
+  kyoto: '京都府',
+  osaka: '大阪府',
+  hyogo: '兵庫県',
+  hokkaido: '北海道',
+};
+
+// Aggregate visited regions + post counts per region.
+const visitedRegions = new Set<string>();
+const countByRegion = new Map<string, number>();
+const visitedCountryIds = new Set<string>();
+
+for (const post of posts) {
+  const regionsForPost = new Set<string>();
+  const countriesForPost = new Set<string>();
+  for (const placeId of post.data.places) {
+    const provId = provinceOf(placeId);
+    if (provId && placeIdToRegionName[provId]) {
+      regionsForPost.add(placeIdToRegionName[provId]);
+    }
+    // Also figure out the country for this post (root ancestor)
+    let cur: string | undefined = placeId;
+    for (let i = 0; i < 16 && cur; i++) {
+      const p = placeById.get(cur);
+      if (!p) break;
+      if (!p.data.parent) {
+        countriesForPost.add(p.id);
+        break;
+      }
+      cur = p.data.parent;
+    }
+  }
+  for (const r of regionsForPost) {
+    visitedRegions.add(r);
+    countByRegion.set(r, (countByRegion.get(r) ?? 0) + 1);
+  }
+  for (const c of countriesForPost) visitedCountryIds.add(c);
+}
+
+const visitedArr = Array.from(visitedRegions);
+const tooltipData = visitedArr.map((r) => ({ name: r, count: countByRegion.get(r) ?? 0 }));
+
+const totalCountries = visitedCountryIds.size;
+---
+
+{
+  visitedArr.length > 0 && (
+    <figure class="world-map">
+      <div
+        class="world-map-canvas"
+        data-visited={JSON.stringify(visitedArr)}
+        data-tooltip={JSON.stringify(tooltipData)}
+      />
+      <figcaption>
+        <span>
+          足迹覆盖 · {totalCountries} 国、{visitedArr.length} 个省 / 都道府县
+        </span>
+      </figcaption>
+    </figure>
+  )
+}
+
+<script>
+  import 'leaflet/dist/leaflet.css';
+  import L from 'leaflet';
+  // @ts-expect-error world-atlas ships TopoJSON, no .d.ts
+  import countriesTopo from 'world-atlas/countries-110m.json';
+  import { feature } from 'topojson-client';
+  import chinaProvinces from '../data/geo/china-provinces.json';
+  import japanTopo from '../data/geo/japan-prefectures.json';
+
+  type RegionFeature = {
+    type: 'Feature';
+    properties: { name?: string; nam?: string; nam_ja?: string };
+    geometry: GeoJSON.Geometry;
+  };
+
+  async function initWorldMaps() {
+    const canvases = document.querySelectorAll<HTMLElement>('.world-map-canvas');
+    if (canvases.length === 0) return;
+
+    // World countries minus China + Japan (we render those at province level).
+    const worldFc = feature(
+      countriesTopo as any,
+      (countriesTopo as any).objects.countries,
+    ) as GeoJSON.FeatureCollection;
+    const worldExcl: GeoJSON.FeatureCollection = {
+      type: 'FeatureCollection',
+      features: worldFc.features.filter((f: any) => {
+        const n = f.properties?.name;
+        return n !== 'China' && n !== 'Japan';
+      }),
+    };
+
+    // Japan prefectures (topojson → geojson).
+    const japanFc = feature(
+      japanTopo as any,
+      (japanTopo as any).objects.japan,
+    ) as GeoJSON.FeatureCollection;
+
+    // China provinces are already plain GeoJSON.
+    const chinaFc = chinaProvinces as unknown as GeoJSON.FeatureCollection;
+
+    for (const el of canvases) {
+      const rawVisited = el.dataset.visited;
+      const rawTooltip = el.dataset.tooltip;
+      if (!rawVisited || !rawTooltip) continue;
+      const visited = new Set<string>(JSON.parse(rawVisited) as string[]);
+      const tooltips = JSON.parse(rawTooltip) as Array<{ name: string; count: number }>;
+      const countByName = new Map(tooltips.map((t) => [t.name, t.count]));
+
+      const map = L.map(el, {
+        worldCopyJump: true,
+        attributionControl: false,
+        scrollWheelZoom: false,
+      });
+
+      const isDark = () => document.documentElement.dataset.theme === 'dark';
+
+      function styleFor(name: string | undefined) {
+        const dark = isDark();
+        const lit = name ? visited.has(name) : false;
+        return {
+          fillColor: lit ? '#23b7e5' : dark ? '#2c2c2c' : '#e5e9ec',
+          fillOpacity: lit ? 0.6 : 0.4,
+          color: dark ? '#444' : '#bbb',
+          weight: 0.4,
+        };
+      }
+
+      // 1. Other countries (world-atlas, gray fill).
+      const worldLayer = L.geoJSON(worldExcl as any, {
+        style: () => styleFor(undefined),
+      }).addTo(map);
+
+      // 2. China provinces.
+      const chinaLayer = L.geoJSON(chinaFc as any, {
+        style: (f) => styleFor((f as RegionFeature).properties.name),
+        onEachFeature: (f, l) => {
+          const name = (f as RegionFeature).properties.name;
+          if (name && visited.has(name)) {
+            l.bindTooltip(`${name} · ${countByName.get(name) ?? 0} 篇`, {
+              direction: 'center',
+            });
+          }
+        },
+      }).addTo(map);
+
+      // 3. Japan prefectures (use nam_ja Japanese name).
+      const japanLayer = L.geoJSON(japanFc as any, {
+        style: (f) => styleFor((f as RegionFeature).properties.nam_ja),
+        onEachFeature: (f, l) => {
+          const name = (f as RegionFeature).properties.nam_ja;
+          if (name && visited.has(name)) {
+            l.bindTooltip(`${name} · ${countByName.get(name) ?? 0} 篇`, {
+              direction: 'center',
+            });
+          }
+        },
+      }).addTo(map);
+
+      // React to dark mode toggle.
+      const obs = new MutationObserver(() => {
+        worldLayer.setStyle(() => styleFor(undefined));
+        chinaLayer.setStyle((f: any) =>
+          styleFor((f as RegionFeature).properties.name),
+        );
+        japanLayer.setStyle((f: any) =>
+          styleFor((f as RegionFeature).properties.nam_ja),
+        );
+      });
+      obs.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      });
+
+      // Initial view: fit to visited regions' combined bounds.
+      const visitedLayers: L.Layer[] = [];
+      chinaLayer.eachLayer((l) => {
+        const f = (l as any).feature as RegionFeature;
+        if (f && f.properties.name && visited.has(f.properties.name)) {
+          visitedLayers.push(l);
+        }
+      });
+      japanLayer.eachLayer((l) => {
+        const f = (l as any).feature as RegionFeature;
+        if (f && f.properties.nam_ja && visited.has(f.properties.nam_ja)) {
+          visitedLayers.push(l);
+        }
+      });
+      if (visitedLayers.length > 0) {
+        const group = L.featureGroup(visitedLayers);
+        map.fitBounds(group.getBounds(), { padding: [40, 40] });
+      } else {
+        map.setView([20, 0], 2);
+      }
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initWorldMaps);
+  } else {
+    initWorldMaps();
+  }
+</script>
+
+<style>
+  .world-map {
+    margin: 0 0 var(--space-md);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    background: var(--color-bg-card);
+  }
+  .world-map-canvas {
+    width: 100%;
+    height: 320px;
+    background: var(--color-bg);
+  }
+  .world-map figcaption {
+    padding: 8px 14px;
+    font-size: 12px;
+    color: var(--color-text-muted);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+  }
+</style>

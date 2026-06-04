@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Sidebar from '../../components/Sidebar.astro';
 import Icon from '../../components/Icon.astro';
+import WorldMap from '../../components/WorldMap.astro';
 
 const trips = (await getCollection('trips')).sort(
   (a, b) => b.data.startDate.valueOf() - a.data.startDate.valueOf()
@@ -25,6 +26,8 @@ const fmt = (d: Date) =>
         <h1>行程 · Trips</h1>
         <p>把多日多地的旅行装进一个时间盒子。</p>
       </header>
+
+      <WorldMap />
 
       {
         trips.length === 0 ? (
