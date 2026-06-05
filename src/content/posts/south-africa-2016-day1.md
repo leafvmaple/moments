@@ -107,7 +107,7 @@ cover: /images/south-africa-2016-day1/20160117_180458.jpg
 
 院子另一头是泳池 —— 一把茅草伞、几张躺椅，池水在暮色里泛蓝，身后是黑下来的山坡。
 
-![暮色里的泳池](/images/south-africa-2016-day1/20160117_191741.jpg)
+![暮色里的泳池](/images/south-africa-2016-day1/20160117_191752.jpg)
 
 ### 房间
 
