@@ -66,5 +66,7 @@
 > - 借用的坐标已经足够近、可以接受 → 把 `[ ]` 改成 `[x]` —— 下次跑保留 `[x]` 标记
 
 <!-- GPS_TODO:START -->
-
+- [x] south-africa-2016-day1/20160117_132806.jpg — borrowed:20160117_132054.jpg (±7.2min)
+- [x] south-africa-2016-day1/20160117_170910.jpg — borrowed:20160117_170859.jpg (±0.2min)
+- [x] south-africa-2016-day1/20160117_180458.jpg — borrowed:20160117_181029.jpg (±5.5min)
 <!-- GPS_TODO:END -->

@@ -1,0 +1,129 @@
+[
+  {
+    "file": "20160117_132054.jpg",
+    "src": "/images/south-africa-2016-day1/20160117_132054.jpg",
+    "time": "2016-01-17T13:20:54",
+    "lat": -26.157075,
+    "lng": 28.210144
+  },
+  {
+    "file": "20160117_132806.jpg",
+    "src": "/images/south-africa-2016-day1/20160117_132806.jpg",
+    "time": "2016-01-17T13:28:06",
+    "lat": -26.157075,
+    "lng": 28.210144,
+    "gpsSource": "borrowed:20160117_132054.jpg (±7.2min)"
+  },
+  {
+    "file": "20160117_153042.jpg",
+    "src": "/images/south-africa-2016-day1/20160117_153042.jpg",
+    "time": "2016-01-17T15:30:42",
+    "lat": -26.133028,
+    "lng": 28.229958
+  },
+  {
+    "file": "20160117_155153.jpg",
+    "src": "/images/south-africa-2016-day1/20160117_155153.jpg",
+    "time": "2016-01-17T15:51:53",
+    "lat": -25.881678,
+    "lng": 28.254672
+  },
+  {
+    "file": "20160117_161656.jpg",
+    "src": "/images/south-africa-2016-day1/20160117_161656.jpg",
+    "time": "2016-01-17T16:16:56",
+    "lat": -25.643933,
+    "lng": 28.249075
+  },
+  {
+    "file": "20160117_161713.jpg",
+    "src": "/images/south-africa-2016-day1/20160117_161713.jpg",
+    "time": "2016-01-17T16:17:13",
+    "lat": -25.643853,
+    "lng": 28.248933
+  },
+  {
+    "file": "20160117_170859.jpg",
+    "src": "/images/south-africa-2016-day1/20160117_170859.jpg",
+    "time": "2016-01-17T17:08:59",
+    "lat": -25.723719,
+    "lng": 27.658378
+  },
+  {
+    "file": "20160117_170910.jpg",
+    "src": "/images/south-africa-2016-day1/20160117_170910.jpg",
+    "time": "2016-01-17T17:09:10",
+    "lat": -25.723719,
+    "lng": 27.658378,
+    "gpsSource": "borrowed:20160117_170859.jpg (±0.2min)"
+  },
+  {
+    "file": "20160117_180458.jpg",
+    "src": "/images/south-africa-2016-day1/20160117_180458.jpg",
+    "time": "2016-01-17T18:04:58",
+    "lat": -25.343353,
+    "lng": 27.095494,
+    "gpsSource": "borrowed:20160117_181029.jpg (±5.5min)"
+  },
+  {
+    "file": "20160117_181029.jpg",
+    "src": "/images/south-africa-2016-day1/20160117_181029.jpg",
+    "time": "2016-01-17T18:10:29",
+    "lat": -25.343353,
+    "lng": 27.095494
+  },
+  {
+    "file": "20160117_184753.jpg",
+    "src": "/images/south-africa-2016-day1/20160117_184753.jpg",
+    "time": "2016-01-17T18:47:53",
+    "lat": -25.3181,
+    "lng": 27.084,
+    "gpsSource": "manual: Bakubung Bush Lodge",
+    "manual": true
+  },
+  {
+    "file": "20160117_184915.jpg",
+    "src": "/images/south-africa-2016-day1/20160117_184915.jpg",
+    "time": "2016-01-17T18:49:15",
+    "lat": -25.3181,
+    "lng": 27.084,
+    "gpsSource": "manual: Bakubung Bush Lodge",
+    "manual": true
+  },
+  {
+    "file": "20160117_185009.jpg",
+    "src": "/images/south-africa-2016-day1/20160117_185009.jpg",
+    "time": "2016-01-17T18:50:09",
+    "lat": -25.3181,
+    "lng": 27.084,
+    "gpsSource": "manual: Bakubung Bush Lodge",
+    "manual": true
+  },
+  {
+    "file": "20160117_191627.jpg",
+    "src": "/images/south-africa-2016-day1/20160117_191627.jpg",
+    "time": "2016-01-17T19:16:27",
+    "lat": -25.3181,
+    "lng": 27.084,
+    "gpsSource": "manual: Bakubung Bush Lodge",
+    "manual": true
+  },
+  {
+    "file": "20160117_191741.jpg",
+    "src": "/images/south-africa-2016-day1/20160117_191741.jpg",
+    "time": "2016-01-17T19:17:41",
+    "lat": -25.3181,
+    "lng": 27.084,
+    "gpsSource": "manual: Bakubung Bush Lodge",
+    "manual": true
+  },
+  {
+    "file": "20160117_220101.jpg",
+    "src": "/images/south-africa-2016-day1/20160117_220101.jpg",
+    "time": "2016-01-17T22:01:01",
+    "lat": -25.3181,
+    "lng": 27.084,
+    "gpsSource": "manual: Bakubung Bush Lodge",
+    "manual": true
+  }
+]
