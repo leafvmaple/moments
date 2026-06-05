@@ -89,6 +89,20 @@ const visitedArr = Array.from(visitedRegions);
 const tooltipData = visitedArr.map((r) => ({ name: r, count: countByRegion.get(r) ?? 0 }));
 
 const totalCountries = visitedCountryIds.size;
+
+// Region names mapped at COUNTRY level (root place, no subdivision GeoJSON) —
+// e.g. 'South Africa'. These shouldn't be counted as 省/都道府县 in the caption.
+const countryLevelRegionNames = new Set(
+  Object.keys(placeIdToRegionName)
+    .filter((id) => {
+      const p = placeById.get(id);
+      return p && !p.data.parent;
+    })
+    .map((id) => placeIdToRegionName[id]),
+);
+const subNationalCount = visitedArr.filter(
+  (r) => !countryLevelRegionNames.has(r),
+).length;
 ---
 
 {
@@ -101,7 +115,7 @@ const totalCountries = visitedCountryIds.size;
       />
       <figcaption>
         <span>
-          足迹覆盖 · {totalCountries} 国、{visitedArr.length} 个省 / 都道府县
+          足迹覆盖 · {totalCountries} 国、{subNationalCount} 个省 / 都道府县
         </span>
       </figcaption>
     </figure>
@@ -176,9 +190,19 @@ const totalCountries = visitedCountryIds.size;
         };
       }
 
-      // 1. Other countries (world-atlas, gray fill).
+      // 1. World countries (world-atlas). Lit when visited at COUNTRY level
+      //    (countries without subdivision GeoJSON shipped, e.g. South Africa);
+      //    otherwise gray context fill.
       const worldLayer = L.geoJSON(worldExcl as any, {
-        style: () => styleFor(undefined),
+        style: (f) => styleFor((f as RegionFeature).properties.name),
+        onEachFeature: (f, l) => {
+          const name = (f as RegionFeature).properties.name;
+          if (name && visited.has(name)) {
+            l.bindTooltip(`${name} · ${countByName.get(name) ?? 0} 篇`, {
+              direction: 'center',
+            });
+          }
+        },
       }).addTo(map);
 
       // 2. China provinces.
@@ -209,7 +233,9 @@ const totalCountries = visitedCountryIds.size;
 
       // React to dark mode toggle.
       const obs = new MutationObserver(() => {
-        worldLayer.setStyle(() => styleFor(undefined));
+        worldLayer.setStyle((f: any) =>
+          styleFor((f as RegionFeature).properties.name),
+        );
         chinaLayer.setStyle((f: any) =>
           styleFor((f as RegionFeature).properties.name),
         );
@@ -233,6 +259,12 @@ const totalCountries = visitedCountryIds.size;
       japanLayer.eachLayer((l) => {
         const f = (l as any).feature as RegionFeature;
         if (f && f.properties.nam_ja && visited.has(f.properties.nam_ja)) {
+          visitedLayers.push(l);
+        }
+      });
+      worldLayer.eachLayer((l) => {
+        const f = (l as any).feature as RegionFeature;
+        if (f && f.properties.name && visited.has(f.properties.name)) {
           visitedLayers.push(l);
         }
       });
