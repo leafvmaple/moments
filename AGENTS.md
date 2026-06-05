@@ -465,6 +465,93 @@ cover: /images/<某篇post slug>/<YYYYMMDD_HHMMSS>.jpg  # 通常借一篇 post �
 
 ---
 
+## 地点 (Place) 体系
+
+跟 trip 平级、按**地理层级**归纳：一篇 post 可以属于一个 trip（时间盒子）、
+同时属于一个或多个 place（空间盒子）。
+
+### 层级 + 文件
+
+`src/content/places/<id>.md`、frontmatter：
+
+```yaml
+---
+name: 兵库县            # 显示名
+parent: japan          # 上级 place id；顶层（国家）不写 parent
+excerpt: 一句话定位
+cover: /images/.../xxx.jpg   # 可选
+---
+```
+
+现状层级（每次加新地点前先扫一眼、避免重建）：
+
+```text
+china → guangdong → zhuhai → lingding
+japan → tokyo / kyoto / osaka / hokkaido → sapporo / jozankei / otaru
+japan → hyogo → kobe
+```
+
+### post 怎么挂 places
+
+frontmatter 加 `places: [<id>, ...]` —— 一篇可以归到多个（跨城帖、bookend 帖）：
+
+```yaml
+places:
+  - kyoto
+  - osaka
+```
+
+### 路由
+
+- `/places` —— 整棵树、每节点显示累计篇数（含子树）。组件 `PlaceTreeNode.astro`
+  自递归、深度不受限
+- `/places/<id>` —— 详情 + 上级 breadcrumb + 子地点 + 该 place subtree 的全部 posts
+- post 顶部 breadcrumb 同时显示「**属于行程 · X**」+「**地点 · A / B**」两行
+
+### 「足迹覆盖」WorldMap（高德同款点亮区域）
+
+挂在 `/trips/index.astro` 顶部、世界地图、去过的省/府县亮蓝、其它灰。
+
+数据：
+
+- `src/data/geo/china-provinces.json` —— DataV.GeoAtlas、`properties.name` 简中
+  「广东省」「北京市」
+- `src/data/geo/japan-prefectures.json` —— dataofjapan TopoJSON、`properties.nam_ja`
+  日文繁体「東京都」「京都府」「兵庫県」「北海道」
+- `world-atlas` npm —— 国家级、`properties.name` 英文「China」「Japan」
+
+⚠️ **`src/components/WorldMap.astro` 的 `placeIdToRegionName` 映射表是单点维护处**。
+解析算法 **leaf → root 走、找第一个有 mapping 的节点**：
+
+- 国家**有子级 GeoJSON**（中国 / 日本）→ 映射打在 **省/府县** id 上
+- 国家**没子级 GeoJSON**（如南非 v1）→ 映射打在 **国家** id 上、所有子节点自动 fallback 到国家级亮区
+
+### 加新国家的清单（**写新国家游记前必看**）
+
+1. **建国家 place**：`src/content/places/<country-id>.md`（无 parent）
+2. **添加 city / region 子节点**：写 post 时按需建（`parent: <country-id>`）
+3. **决定地图精度**：
+   - **国家级够用**（v1、推荐）→ 直接在 `WorldMap.astro` 的 `placeIdToRegionName` 加
+     `<country-id>: '<world-atlas English name>'`（自己 grep 一下 `world-atlas/countries-110m.json` 拿准确名）
+   - **要细到省级**（v2、可选）→ 找该国 province GeoJSON（DataV / Natural Earth / GADM）
+     塞 `src/data/geo/<country>-regions.json`、给 WorldMap 加一层 `L.geoJSON(...)`、
+     更新 `placeIdToRegionName` 在省 id 上
+4. **filter 调整**：如果加了省级数据、`worldExcl` 那个过滤里要追加新国家名（避免国家
+   polygon + 省 polygon 重叠）
+
+### TrailMap 地图供应商（自动切、不用手动配）
+
+- **多数点在国内 bbox**（lat 18-54, lng 73-135）→ **高德 style=8** 灰白底
+  + WGS-84 → GCJ-02 坐标转（`gcoord`）
+- **多数点在国外** → CARTO Voyager（两种主题都用 light、Dark Matter 标签太低对比、
+  反而不如 Voyager 始终可读）
+- 内置 fallback 用 bbox 多数决、无需手动指定
+
+⚠️ **新国家自动用 CARTO** —— 如果某国 OSM 数据稀薄（远东 / 中亚 / 非洲二三线）想要更精
+的底图、看 [CARTO / Mapbox / Stadia 评估](src/components/TrailMap.astro 注释)。
+
+---
+
 ## 几条容易踩的坑
 
 | 坑 | 现象 | 对策 |

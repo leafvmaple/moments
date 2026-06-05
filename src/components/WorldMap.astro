@@ -14,41 +14,46 @@ const posts = await getCollection('posts');
 const places = await getCollection('places');
 const placeById = new Map(places.map((p) => [p.id, p]));
 
-// Walk up from `placeId` until we find a place whose parent is undefined
-// (= root, i.e. country). Return the last id we saw before that root.
-// For tokyo (parent=japan): returns 'tokyo'.
-// For lingding (-> zhuhai -> guangdong -> china): returns 'guangdong'.
-function provinceOf(placeId: string): string | null {
-  let cur: string | undefined = placeId;
-  let lastBeforeRoot = cur;
-  for (let i = 0; i < 16 && cur; i++) {
-    const place = placeById.get(cur);
-    if (!place) return null;
-    if (!place.data.parent) {
-      // cur is root. If we never moved, the post's only place is the country
-      // itself (no province data) — return null.
-      return lastBeforeRoot === cur ? null : lastBeforeRoot;
-    }
-    lastBeforeRoot = cur;
-    cur = place.data.parent;
-  }
-  return null;
-}
-
-// Map our place id → the region name as it appears in the GeoJSON property:
+// Map a place id → the region name as it appears in the GeoJSON property:
 //   - China geojson uses simplified Chinese: 「广东省」「北京市」「香港特别行政区」
 //   - Japan topojson uses Japanese 「東京都」「京都府」「兵庫県」「北海道」
+//   - world-atlas uses English country names: 'China', 'Japan', 'South Africa'
+// Add mapping at WHATEVER level (city/prov/country) maps to a GeoJSON layer
+// we ship. The resolver walks leaf → root, picking the FIRST mapped ancestor.
+//
+// Concretely:
+//   - Country has subdivision GeoJSON shipped → map at province/prefecture level
+//   - Country has no subdivision GeoJSON → map the country itself (world-atlas
+//     country layer). Then all children automatically light it via fallback.
 const placeIdToRegionName: Record<string, string> = {
-  // China provinces (properties.name)
+  // China provinces (properties.name in china-provinces.json)
   guangdong: '广东省',
   // add as posts grow: beijing: '北京市', shanghai: '上海市', sichuan: '四川省', ...
-  // Japan prefectures (properties.nam_ja)
+  // Japan prefectures (properties.nam_ja in japan-prefectures.json)
   tokyo: '東京都',
   kyoto: '京都府',
   osaka: '大阪府',
   hyogo: '兵庫県',
   hokkaido: '北海道',
+  // Country-level only (no subdivision data shipped) — world-atlas English name
+  // Example: south-africa: 'South Africa',
 };
+
+// Walk leaf → root, return the FIRST id that has a regionName mapping.
+// - tokyo (mapped) → '東京都'
+// - kobe (no) → hyogo (mapped) → '兵庫県'
+// - lingding (no) → zhuhai (no) → guangdong (mapped) → '广东省'
+// - cape-town (no) → south-africa (mapped to 'South Africa') → 'South Africa'
+function findRegionName(placeId: string): string | null {
+  let cur: string | undefined = placeId;
+  for (let i = 0; i < 16 && cur; i++) {
+    if (placeIdToRegionName[cur]) return placeIdToRegionName[cur];
+    const place = placeById.get(cur);
+    if (!place) return null;
+    cur = place.data.parent;
+  }
+  return null;
+}
 
 // Aggregate visited regions + post counts per region.
 const visitedRegions = new Set<string>();
@@ -59,10 +64,8 @@ for (const post of posts) {
   const regionsForPost = new Set<string>();
   const countriesForPost = new Set<string>();
   for (const placeId of post.data.places) {
-    const provId = provinceOf(placeId);
-    if (provId && placeIdToRegionName[provId]) {
-      regionsForPost.add(placeIdToRegionName[provId]);
-    }
+    const name = findRegionName(placeId);
+    if (name) regionsForPost.add(name);
     // Also figure out the country for this post (root ancestor)
     let cur: string | undefined = placeId;
     for (let i = 0; i < 16 && cur; i++) {
@@ -108,8 +111,8 @@ const totalCountries = visitedCountryIds.size;
 <script>
   import 'leaflet/dist/leaflet.css';
   import L from 'leaflet';
-  // @ts-expect-error world-atlas ships TopoJSON, no .d.ts
   import countriesTopo from 'world-atlas/countries-110m.json';
+  // @ts-expect-error topojson-client ships no .d.ts
   import { feature } from 'topojson-client';
   import chinaProvinces from '../data/geo/china-provinces.json';
   import japanTopo from '../data/geo/japan-prefectures.json';
