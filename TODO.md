@@ -68,5 +68,4 @@
 <!-- GPS_TODO:START -->
 - [x] south-africa-2016-day1/20160117_132806.jpg — borrowed:20160117_132054.jpg (±7.2min)
 - [x] south-africa-2016-day1/20160117_170910.jpg — borrowed:20160117_170859.jpg (±0.2min)
-- [x] south-africa-2016-day1/20160117_180458.jpg — borrowed:20160117_180819.jpg (±3.4min)
 <!-- GPS_TODO:END -->
