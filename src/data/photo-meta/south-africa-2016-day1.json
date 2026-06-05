@@ -10,9 +10,8 @@
     "file": "20160117_132806.jpg",
     "src": "/images/south-africa-2016-day1/20160117_132806.jpg",
     "time": "2016-01-17T13:28:06",
-    "lat": -26.157075,
-    "lng": 28.210144,
-    "gpsSource": "borrowed:20160117_132054.jpg (±7.2min)"
+    "lat": -26.130608,
+    "lng": 28.232594
   },
   {
     "file": "20160117_153042.jpg",
@@ -53,9 +52,8 @@
     "file": "20160117_170910.jpg",
     "src": "/images/south-africa-2016-day1/20160117_170910.jpg",
     "time": "2016-01-17T17:09:10",
-    "lat": -25.723719,
-    "lng": 27.658378,
-    "gpsSource": "borrowed:20160117_170859.jpg (±0.2min)"
+    "lat": -25.722367,
+    "lng": 27.657267
   },
   {
     "file": "20160117_180458.jpg",
@@ -82,37 +80,29 @@
     "file": "20160117_184753.jpg",
     "src": "/images/south-africa-2016-day1/20160117_184753.jpg",
     "time": "2016-01-17T18:47:53",
-    "lat": -25.345556,
-    "lng": 27.054731,
-    "gpsSource": "manual: Bakubung Bush Lodge（对齐同组实拍 GPS 20160117_191752）",
-    "manual": true
+    "lat": -25.345522,
+    "lng": 27.054017
   },
   {
     "file": "20160117_184915.jpg",
     "src": "/images/south-africa-2016-day1/20160117_184915.jpg",
     "time": "2016-01-17T18:49:15",
-    "lat": -25.345556,
-    "lng": 27.054731,
-    "gpsSource": "manual: Bakubung Bush Lodge（对齐同组实拍 GPS 20160117_191752）",
-    "manual": true
+    "lat": -25.3455,
+    "lng": 27.055658
   },
   {
     "file": "20160117_185009.jpg",
     "src": "/images/south-africa-2016-day1/20160117_185009.jpg",
     "time": "2016-01-17T18:50:09",
-    "lat": -25.345556,
-    "lng": 27.054731,
-    "gpsSource": "manual: Bakubung Bush Lodge（对齐同组实拍 GPS 20160117_191752）",
-    "manual": true
+    "lat": -25.345258,
+    "lng": 27.055575
   },
   {
     "file": "20160117_191627.jpg",
     "src": "/images/south-africa-2016-day1/20160117_191627.jpg",
     "time": "2016-01-17T19:16:27",
-    "lat": -25.345556,
-    "lng": 27.054731,
-    "gpsSource": "manual: Bakubung Bush Lodge（对齐同组实拍 GPS 20160117_191752）",
-    "manual": true
+    "lat": -25.345494,
+    "lng": 27.054714
   },
   {
     "file": "20160117_191752.jpg",
@@ -125,9 +115,7 @@
     "file": "20160117_220101.jpg",
     "src": "/images/south-africa-2016-day1/20160117_220101.jpg",
     "time": "2016-01-17T22:01:01",
-    "lat": -25.345556,
-    "lng": 27.054731,
-    "gpsSource": "manual: Bakubung Bush Lodge（对齐同组实拍 GPS 20160117_191752）",
-    "manual": true
+    "lat": -25.345492,
+    "lng": 27.054711
   }
 ]
