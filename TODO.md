@@ -66,5 +66,5 @@
 > - 借用的坐标已经足够近、可以接受 → 把 `[ ]` 改成 `[x]` —— 下次跑保留 `[x]` 标记
 
 <!-- GPS_TODO:START -->
-
+- [ ] egypt-2024-day1/20241206_123323.jpg — missing entirely
 <!-- GPS_TODO:END -->
