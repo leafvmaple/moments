@@ -80,6 +80,20 @@ public/images/<slug>/YYYYMMDD_HHMMSS.jpg  ← 处理后的图，按 EXIF 时间�
 photos/<slug>/extracted/IMG_xxx.jpg   ← 原图（不进 git？看用户偏好）
 ```
 
+> **命名公约（必须遵守）：post slug = `<行程地名>-<YYYY>-day<N>`。**
+>
+> - `<行程地名>` = 该 post 所属 **trip 的地名 token**，全 trip 一致 —— 多数是国家
+>   （`japan` / `egypt` / `south-africa`）；聚焦单一地点的行程用那个地点（`lingding`）。
+>   **城市 / 府县不进 slug**，只写进 `title` 和 `places:`。
+> - `-day<N>` = 行程内第几天（按 `date` 升序，1 起）。**多篇行程每篇都带**；单篇行程
+>   不带（如 `lingding-2022`）；去 + 回两端那篇用 `-bookend`（如 `japan-2015-bookend`）。
+> - `<YYYY>` = 行程年份（跨年重访同地的冲突 fallback 同 trip slug：扩到月 / 起始日）。
+> - **三处必须同名**：`posts/<slug>.md`、`public/images/<slug>/`、`photo-meta/<slug>.json`
+>   完全一致。给定一篇 post，图就在 `/images/<slug>/`，无例外。
+> - 例：`japan-2015-day3`（北海道那天）、`japan-2020-day2`（京都那天）、`egypt-2024-day1`。
+>   **废弃写法**（2026-06 已统一，别再用）：城市名 `kyoto`、城市-城市 `kyoto-osaka-2015`、
+>   或图片目录 ≠ slug（`kyoto-winter` 配 `images/kyoto/`）。
+
 frontmatter 字段：
 
 ```yaml
@@ -177,11 +191,11 @@ magick "$path" -modulate 100,120,100 -quality 88 "$path"  # 1.2x 已是上限
 在压缩 + 天空调整都做完之后跑：
 
 ```powershell
-node scripts/extract-photo-meta.mjs <slug> public/images/<image-dir>
+node scripts/extract-photo-meta.mjs <slug> public/images/<slug>
 ```
 
-`<slug>` 是文章 markdown 文件名（无 `.md`），`<image-dir>` 是图所在的子目录名 ——
-两者**不一定相等**（如 `kyoto-winter.md` 配 `public/images/kyoto/`）。脚本读每张
+`<slug>` = 文章 md 文件名 = 图片子目录名（见 §6 命名公约，**两者恒等**；脚本仍收两个
+参数以防特例，默认两者一致）。脚本读每张
 JPEG 的 EXIF GPS + 文件名时间戳，输出 `src/data/photo-meta/<slug>.json`。
 `src/pages/posts/[...slug].astro` 已挂 `<TrailMap slug={post.id} />`，有对应 json
 就自动渲染，没有就空 —— **新增博文不需要改任何代码**，只要跑一次脚本。
@@ -272,8 +286,8 @@ gh run list --limit 3 --workflow=deploy.yml
 
 ## 文风规范（house style —— 默认照此写，不再问）
 
-> 从已发布的多篇里提炼。两个语感锚点：[`kyoto-winter.md`](src/content/posts/kyoto-winter.md)
-> （**散文档**）、[`hokkaido-2015-day1.md`](src/content/posts/hokkaido-2015-day1.md)
+> 从已发布的多篇里提炼。两个语感锚点：[`japan-2020-day2.md`](src/content/posts/japan-2020-day2.md)
+> （**散文档**，京都一日）、[`japan-2015-day3.md`](src/content/posts/japan-2015-day3.md)
 > （**纪实档**）。新游记直接照此下笔，§4 不再给 A/B 样段。
 
 ### 一句话定调
@@ -286,8 +300,8 @@ gh run list --limit 3 --workflow=deploy.yml
 
 | 档 | 用在 | 句法特征 | 锚样本 |
 | --- | --- | --- | --- |
-| **散文档** | 慢节奏、单线、意象强（半天一个地方） | 句子舒展些、段间留白、情绪更柔、破折号收尾 | kyoto-winter |
-| **纪实档** | 快节奏、一天多点、跟团（信息量大） | 顿号「、」/「+」串联视觉元素、**加粗事实锚**、正文里带时间戳交代行程 | hokkaido-2015-day1 / lingding-2022 |
+| **散文档** | 慢节奏、单线、意象强（半天一个地方） | 句子舒展些、段间留白、情绪更柔、破折号收尾 | japan-2020-day2 |
+| **纪实档** | 快节奏、一天多点、跟团（信息量大） | 顿号「、」/「+」串联视觉元素、**加粗事实锚**、正文里带时间戳交代行程 | japan-2015-day3 / lingding-2022 |
 
 「公司团一天跑多点」（如南非、2015 北海道）默认走**纪实档**，但每个 H2 章末仍按
 §节奏与立意 收一段散文档式的收束。两档不是非此即彼 —— 一篇里可以大体纪实、收束处转散文。
@@ -364,9 +378,9 @@ summary。例：
 
 | 关系 | 推荐 | 例 |
 | --- | --- | --- |
-| 同地点同视角 / 不同细节 | 横排 diptych | 餐巾 + 杯子（tokyo-2015-day2） |
-| 同主题不同 angle | 横排 diptych | 鬼像 + 鬼っこ厕所（hokkaido-2015-day1） |
-| 多张同主题 | 2×2 宫格 | 一桌 4 道菜（hokkaido-2015-day1） |
+| 同地点同视角 / 不同细节 | 横排 diptych | 餐巾 + 杯子（japan-2015-day2） |
+| 同主题不同 angle | 横排 diptych | 鬼像 + 鬼っこ厕所（japan-2015-day3） |
+| 多张同主题 | 2×2 宫格 | 一桌 4 道菜（japan-2015-day3） |
 
 合图命令（与第 7 步压缩流程协同）：
 
@@ -397,7 +411,7 @@ Move-Item _diptych.jpg <left> -Force ; Remove-Item <right>
 - **太重**（>100 字）：像旅游手册，破坏当下视角
 - **甜区**（50–95）：一个具体人 + 一个具体年份 + 一个具体动作 + 一句意外感
 
-正例（[hokkaido-2015-day1.md](src/content/posts/hokkaido-2015-day1.md) "昭和新山" 节）：
+正例（[japan-2015-day3.md](src/content/posts/japan-2015-day3.md) "昭和新山" 节）：
 
 > 山脚有一座小博物馆 —— 战时这一带没人有空研究一座新冒出来的山，是当地邮局
 > 局长 三松正夫 在邮局窗台上拉一根线作基线、逐周描下山的剖面、连画了两年；
@@ -451,7 +465,7 @@ H2 章节末 / 全文末 / 白天行程末 **不能"图 → 一句话 → 下一
 - **时间维度收**：今天走过的不同年代叠成一段
 - **人物/地点串行收**：前面几节的人 / 动作 / 物件，最后收到眼前的一帧画面
 
-正例（[hokkaido-2015-day1.md](src/content/posts/hokkaido-2015-day1.md) 白天行程末）：
+正例（[japan-2015-day3.md](src/content/posts/japan-2015-day3.md) 白天行程末）：
 
 > 夕阳是冷的，远处山脊起伏，孤立的红色把整片白衬出了一点温度。
 >
@@ -677,9 +691,9 @@ places:
 
 按此流程产出的两篇游记，风格都是「散文白描 + 生活随笔感想」的融合 —— 可作为新游记的语感锚点：
 
-- [`src/content/posts/kyoto-winter.md`](src/content/posts/kyoto-winter.md)
+- [`src/content/posts/japan-2020-day2.md`](src/content/posts/japan-2020-day2.md)
   约 2500 字，18 张配图。**多段行程模板**：上午嵐山 + 下午伏见，用 `## 大块 + ### 章节`
   结构，结尾「半天灰，半天红」的并置呼应。
-- [`src/content/posts/osaka.md`](src/content/posts/osaka.md)
+- [`src/content/posts/japan-2020-day1.md`](src/content/posts/japan-2020-day1.md)
   约 1400 字，9 张配图。**单线行程模板**：从大阪城外围→天守阁→广场→出园→道顿堀→
   松屋牛丼，结尾呼应早上的鸽子。
