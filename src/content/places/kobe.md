@@ -2,7 +2,7 @@
 name: 神户
 parent: hyogo
 excerpt: 兵库县首府、关西西部港湾城市、1995 年阪神大震灾发生地。
-cover: /images/hokkaido-2015-day2/20150127_220419.jpg
+cover: /images/japan-2015-day4/20150127_220419.jpg
 ---
 
 2015 年 1 月一晚 —— 神户水果花酒店（仿荷兰国立美术馆的城堡式建筑）、22 点过到、设施都关了。
